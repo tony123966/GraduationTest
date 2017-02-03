@@ -5,13 +5,15 @@ public class CylinderMesh : MonoBehaviour
 {
 	MeshFilter meshFilter;
 	MeshRenderer meshRenderer;
-	Vector3 topPos;
-	Vector3 buttonPos;
 
-	public float bottomRadius = 2.0f;
-	public float topRadius = 2.0f;
-	public int sections = 10;
+	public Vector3 topPos;
+	public Vector3 bottomPos;
+
+	public float bottomRadius;
+	public float topRadius;
 	public float cylinderLength;
+
+	private int sections;
 	void Awake()
 	{
 		if (!gameObject.GetComponent<MeshFilter>())
@@ -26,7 +28,15 @@ public class CylinderMesh : MonoBehaviour
 			meshRenderer.material.color=Color.red;
 		}
 	}
-	public void SetBeamsMesh()
+	public void CylinderInitSetting(Vector3 topPos, Vector3 bottomPos, float topRadius, float bottomRadius, int sections = 20) 
+	{
+		this.topPos = topPos;
+		this.bottomPos = bottomPos;
+		this.bottomRadius = bottomRadius;
+		this.topRadius = topRadius;
+		this.sections = sections;	
+	}
+	public void SetMesh()
 	{
 		Mesh mesh = new Mesh();
 		meshFilter.mesh = mesh;
@@ -41,27 +51,28 @@ public class CylinderMesh : MonoBehaviour
 
 		// bottom + top + sides
 		Vector3[] vertices = new Vector3[nbVerticesCap + nbVerticesCap + nbSides * nbHeightSeg * 2 + 2];
+
 		int vert = 0;
 		float _2pi = Mathf.PI * 2f;
 
-		cylinderLength = Vector3.Magnitude(topPos - buttonPos);
+		cylinderLength = Vector3.Magnitude(topPos - bottomPos);
 
 		// Bottom cap
-		vertices[vert++] = buttonPos;
+		vertices[vert++] = bottomPos;
 		while (vert <= nbSides)
 		{
 			float rad = (float)vert / nbSides * _2pi;
-			vertices[vert] = new Vector3(Mathf.Cos(rad) * bottomRadius, 0, Mathf.Sin(rad) * bottomRadius) + buttonPos;
+			vertices[vert] = new Vector3(Mathf.Cos(rad) * bottomRadius, 0, Mathf.Sin(rad) * bottomRadius) + bottomPos;
 			vert++;
 		}
 
 		// Top cap
 
-		vertices[vert++] = new Vector3(0, cylinderLength, 0);
+		vertices[vert++] = bottomPos + Vector3.Normalize(topPos - bottomPos) * cylinderLength;
 		while (vert <= nbSides * 2 + 1)
 		{
 			float rad = (float)(vert - nbSides - 1) / nbSides * _2pi;
-			vertices[vert] = new Vector3(Mathf.Cos(rad) * topRadius, 0, Mathf.Sin(rad) * topRadius) +  new Vector3(0, cylinderLength, 0);;
+			vertices[vert] = new Vector3(Mathf.Cos(rad) * topRadius, 0, Mathf.Sin(rad) * topRadius) + bottomPos + Vector3.Normalize(topPos - bottomPos) * cylinderLength;
 			vert++;
 		}
 
@@ -70,8 +81,8 @@ public class CylinderMesh : MonoBehaviour
 		while (vert <= vertices.Length - 4)
 		{
 			float rad = (float)v / nbSides * _2pi;
-			vertices[vert] = new Vector3(Mathf.Cos(rad) * topRadius, 0, Mathf.Sin(rad) * topRadius) + new Vector3(0, cylinderLength, 0); ;
-			vertices[vert + 1] = new Vector3(Mathf.Cos(rad) * bottomRadius, 0, Mathf.Sin(rad) * bottomRadius) +buttonPos;
+			vertices[vert] = new Vector3(Mathf.Cos(rad) * topRadius, 0, Mathf.Sin(rad) * topRadius) + bottomPos + Vector3.Normalize(topPos - bottomPos) * cylinderLength;
+			vertices[vert + 1] = new Vector3(Mathf.Cos(rad) * bottomRadius, 0, Mathf.Sin(rad) * bottomRadius) + bottomPos;
 			vert += 2;
 			v++;
 		}
@@ -216,6 +227,6 @@ public class CylinderMesh : MonoBehaviour
 		mesh.RecalculateBounds();
 		mesh.Optimize();
 
-		transform.up=Vector3.Normalize(buttonPos-topPos);
+	/*	transform.up = Vector3.Normalize(topPos - bottomPos);*/
 	}
 }

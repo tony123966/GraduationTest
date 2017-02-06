@@ -1,41 +1,45 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-public class PlatformController{
+public class PlatformController :MonoBehaviour
+{
 
 	public GameObject platform=null;
 	MeshFilter meshFilter;
 	MeshRenderer meshRenderer;
 
-	public List<Vector3> topPointPosList;
-	public List<Vector3> bottomPointPosList;
+	public  List<Vector3> topPointPosList;
+	public  List<Vector3> bottomPointPosList;
 
 	private static PlatformController instance;
-	public static PlatformController Instance { get { return instance; } }
+	public static PlatformController Instance
+	{
+		get
+		{
+			return instance;
+		}
+	}
 	//***********************************************************************
 
 	//***********************************************************************
-	private void Awake()
-	{
-		if (instance != null && instance != this) Destroy(this.gameObject);
-		else instance = this;
-		Debug.Log("instance " + this.name);
-		Debug.Log("instance " + instance.name);
+	PlatformController() 
+	{ 
+		instance=this;
 	}
 	public void InitFunction()
 	{
-		MainController.platformCenter=Vector3.zero;
-
-		float platformRadius = MainController.platformFrontWidth / (2 * Mathf.Cos((Mathf.PI * 2)/(int)MainController.sides)*2);
+		float platformRadius = MainController.platformFrontWidth / (2 * Mathf.Cos((Mathf.PI * 2) / (int)MainController.sides) * 2);
 
 		platform=new GameObject("Platform");
+		platform.transform.position = MainController.platformCenter;
 		meshFilter = platform.AddComponent<MeshFilter>();
 		meshRenderer=platform.AddComponent<MeshRenderer>();
 		meshRenderer.material.color = Color.white;
-		CreatePlatform(MainController.platformCenter,platformRadius,MainController.platformHeight,0);
+		CreatePlatform(MainController.platformCenter, platformRadius, MainController.platformHeight, 0);
 	}
 	private void CreatePlatform(Vector3 pos, float radius, float height, float rotateAngle)
 	{
+
 		Mesh mesh = new Mesh();
 		meshFilter.mesh = mesh;
 		mesh.Clear();
@@ -44,9 +48,6 @@ public class PlatformController{
 		Vector3 topPos = pos + new Vector3(0, height / 2.0f, 0);
 		Vector3 bottomPos = pos - new Vector3(0, height / 2.0f, 0);
 
-		int edgeCount=(int)MainController.sides;
-		float piDouble = Mathf.PI * 2;
-		float sliceUnit = (piDouble / edgeCount);
 
 		int nbSides = (int)MainController.sides;
 		float bottomRadius=radius;
@@ -67,18 +68,19 @@ public class PlatformController{
 		while (vert <= nbSides)
 		{
 			float rad = (float)vert / nbSides * _2pi;
-			vertices[vert] = new Vector3(Mathf.Cos(rad) * bottomRadius, 0, Mathf.Sin(rad) * bottomRadius) + bottomPos;
+			vertices[vert] = (new Vector3(Mathf.Cos(rad) * bottomRadius, 0, Mathf.Sin(rad) * bottomRadius) + bottomPos);
 			bottomPointPosList.Add(vertices[vert]);
 			vert++;
 		}
 
 		// Top cap
 		topPointPosList.Clear();
-		vertices[vert++] = new Vector3(0, cylinderLength, 0);
+
+		vertices[vert++] = (bottomPos + Vector3.up * cylinderLength);
 		while (vert <= nbSides * 2 + 1)
 		{
 			float rad = (float)(vert - nbSides - 1) / nbSides * _2pi;
-			vertices[vert] = new Vector3(Mathf.Cos(rad) * topRadius, 0, Mathf.Sin(rad) * topRadius) + new Vector3(0, cylinderLength, 0);
+			vertices[vert] = (new Vector3(Mathf.Cos(rad) * topRadius, 0, Mathf.Sin(rad) * topRadius) + bottomPos + Vector3.up * cylinderLength);
 			topPointPosList.Add(vertices[vert]);
 			vert++;
 		}
@@ -88,14 +90,18 @@ public class PlatformController{
 		while (vert <= vertices.Length - 4)
 		{
 			float rad = (float)v / nbSides * _2pi;
-			vertices[vert] = new Vector3(Mathf.Cos(rad) * topRadius, 0, Mathf.Sin(rad) * topRadius) + new Vector3(0, cylinderLength, 0);
-			vertices[vert + 1] = new Vector3(Mathf.Cos(rad) * bottomRadius, 0, Mathf.Sin(rad) * bottomRadius) + bottomPos;
+			vertices[vert] = (new Vector3(Mathf.Cos(rad) * topRadius, 0, Mathf.Sin(rad) * topRadius) + bottomPos + Vector3.up * cylinderLength);
+			vertices[vert + 1] = (new Vector3(Mathf.Cos(rad) * bottomRadius, 0, Mathf.Sin(rad) * bottomRadius) + bottomPos);
 			vert += 2;
 			v++;
 		}
 		vertices[vert] = vertices[nbSides * 2 + 2];
 		vertices[vert + 1] = vertices[nbSides * 2 + 3];
-
+		
+		for (int t = 0; t < vertices.Length; t++)
+		{
+			vertices[t] -= platform.transform.position;
+		}
 		#endregion
 
 		#region Normales
@@ -234,7 +240,8 @@ public class PlatformController{
 		mesh.RecalculateBounds();
 		mesh.Optimize();
 
-		platform.transform.up = Vector3.Normalize(topPos - bottomPos);
+		//platform.transform.up = Vector3.Normalize(topPos - bottomPos);
+		transform.RotateAround(bottomPos, topPos - bottomPos, Vector3.Angle(Vector3.up, topPos - bottomPos));
 	}
 	/*private void CreatePlatform(Vector3 pos, float radius, float height, float rotateAngle)
 	{

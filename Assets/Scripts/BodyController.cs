@@ -4,18 +4,25 @@ using System.Collections.Generic;
 public class BodyController : MonoBehaviour
 {
 	const float CUN = 3.33f;
+
 	private static BodyController instance;
-	public static BodyController Instance { get { return instance; } }
+	public static BodyController Instance
+	{
+		get
+		{
+			return instance;
+		}
+	}
 	//***********************************************************************
 	//public bool twoSide=false;
 	public int eaveColumnNumber;
 	public List<CylinderMesh> eaveColumnList = new List<CylinderMesh>();
-	public List<GameObject> hypostyleColumnList = new List<GameObject>();
+	public List<CylinderMesh> hypostyleColumnList = new List<CylinderMesh>();
 	//***********************************************************************
-	private void Awake()
+
+	BodyController()
 	{
-		if (instance != null && instance != this) Destroy(this.gameObject);
-		else instance = this;
+		instance = this;
 	}
 	public void InitFunction()
 	{
@@ -42,6 +49,7 @@ public class BodyController : MonoBehaviour
 	private CylinderMesh CreateColumn(Vector3 pos, float radius, float height)
 	{
 		GameObject col = new GameObject("Column");
+		col.transform.position = pos;
 		col.AddComponent<CylinderMesh>();
 
 		Vector3 topPos = pos + new Vector3(0, height / 2.0f, 0);
@@ -53,25 +61,15 @@ public class BodyController : MonoBehaviour
 	}
 	public void CreateRingColumn()
 	{
-		Debug.Log("ddc" + PlatformController.Instance.name);
-	Debug.Log("dd"+ PlatformController.Instance.topPointPosList.Count);
+		eaveColumnList.Clear();
 		for (int i = 0; i < PlatformController.Instance.topPointPosList.Count; i++)
 		{
 			Vector2 v = new Vector2(PlatformController.Instance.topPointPosList[i].x - MainController.platformCenter.x, PlatformController.Instance.topPointPosList[i].z - MainController.platformCenter.z);
 			v.Normalize();
 			v = v * MainController.platformFrontWidthOffset2Body;
 			Vector3 pos = PlatformController.Instance.topPointPosList[i] - new Vector3(v.x, 0, v.y) + new Vector3(0, MainController.bodyHeight / 2.0f, 0);
-			CreateColumn(pos, MainController.bodyRadius, MainController.bodyHeight);
-			Debug.Log("pos" + pos);
+			CylinderMesh newColumn=CreateColumn(pos, MainController.bodyRadius, MainController.bodyHeight);
+			eaveColumnList.Add(newColumn);
 		}
-
-		GameObject col = new GameObject("Column");
-		col.AddComponent<CylinderMesh>();
-
-		Vector3 topPos =  new Vector3(10, 0, 0);
-		Vector3 bottomPos = new Vector3(10, 10, 10);
-
-		col.GetComponent<CylinderMesh>().CylinderInitSetting(topPos, bottomPos, 10, 10);
-		col.GetComponent<CylinderMesh>().SetMesh();
 	}
 }

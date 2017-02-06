@@ -53,6 +53,8 @@ public class BodyController : MonoBehaviour
 	}
 	public void CreateRingColumn()
 	{
+		Debug.Log("ddc" + PlatformController.Instance.name);
+	Debug.Log("dd"+ PlatformController.Instance.topPointPosList.Count);
 		for (int i = 0; i < PlatformController.Instance.topPointPosList.Count; i++)
 		{
 			Vector2 v = new Vector2(PlatformController.Instance.topPointPosList[i].x - MainController.platformCenter.x, PlatformController.Instance.topPointPosList[i].z - MainController.platformCenter.z);
@@ -67,7 +69,7 @@ public class BodyController : MonoBehaviour
 		col.AddComponent<CylinderMesh>();
 
 		Vector3 topPos =  new Vector3(10, 0, 0);
-		Vector3 bottomPos = new Vector3(10, 0, 10);
+		Vector3 bottomPos = new Vector3(10, 10, 10);
 
 		col.GetComponent<CylinderMesh>().CylinderInitSetting(topPos, bottomPos, 10, 10);
 		col.GetComponent<CylinderMesh>().SetMesh();

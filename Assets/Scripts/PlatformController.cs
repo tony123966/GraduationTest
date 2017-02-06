@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-public class PlatformController : MonoBehaviour {
+public class PlatformController{
 
 	public GameObject platform=null;
 	MeshFilter meshFilter;
@@ -19,6 +19,8 @@ public class PlatformController : MonoBehaviour {
 	{
 		if (instance != null && instance != this) Destroy(this.gameObject);
 		else instance = this;
+		Debug.Log("instance " + this.name);
+		Debug.Log("instance " + instance.name);
 	}
 	public void InitFunction()
 	{

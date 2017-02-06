@@ -57,22 +57,23 @@ public class CylinderMesh : MonoBehaviour
 
 		cylinderLength = Vector3.Magnitude(topPos - bottomPos);
 
+		Quaternion rotationVector = Quaternion.LookRotation(Vector3.Normalize(topPos - bottomPos));
 		// Bottom cap
-		vertices[vert++] = bottomPos;
+		vertices[vert++] = rotationVector * bottomPos;
 		while (vert <= nbSides)
 		{
 			float rad = (float)vert / nbSides * _2pi;
-			vertices[vert] = new Vector3(Mathf.Cos(rad) * bottomRadius, 0, Mathf.Sin(rad) * bottomRadius) + bottomPos;
+			vertices[vert] = rotationVector * (new Vector3(Mathf.Cos(rad) * bottomRadius, 0, Mathf.Sin(rad) * bottomRadius) + bottomPos);
 			vert++;
 		}
 
 		// Top cap
 
-		vertices[vert++] = bottomPos + Vector3.Normalize(topPos - bottomPos) * cylinderLength;
+		vertices[vert++] = rotationVector * (bottomPos + Vector3.up * cylinderLength);
 		while (vert <= nbSides * 2 + 1)
 		{
 			float rad = (float)(vert - nbSides - 1) / nbSides * _2pi;
-			vertices[vert] = new Vector3(Mathf.Cos(rad) * topRadius, 0, Mathf.Sin(rad) * topRadius) + bottomPos + Vector3.Normalize(topPos - bottomPos) * cylinderLength;
+			vertices[vert] = rotationVector * (new Vector3(Mathf.Cos(rad) * topRadius, 0, Mathf.Sin(rad) * topRadius) + bottomPos + Vector3.up * cylinderLength);
 			vert++;
 		}
 
@@ -81,14 +82,13 @@ public class CylinderMesh : MonoBehaviour
 		while (vert <= vertices.Length - 4)
 		{
 			float rad = (float)v / nbSides * _2pi;
-			vertices[vert] = new Vector3(Mathf.Cos(rad) * topRadius, 0, Mathf.Sin(rad) * topRadius) + bottomPos + Vector3.Normalize(topPos - bottomPos) * cylinderLength;
-			vertices[vert + 1] = new Vector3(Mathf.Cos(rad) * bottomRadius, 0, Mathf.Sin(rad) * bottomRadius) + bottomPos;
+			vertices[vert] = rotationVector * (new Vector3(Mathf.Cos(rad) * topRadius, 0, Mathf.Sin(rad) * topRadius) + bottomPos + Vector3.up * cylinderLength);
+			vertices[vert + 1] = rotationVector * (new Vector3(Mathf.Cos(rad) * bottomRadius, 0, Mathf.Sin(rad) * bottomRadius) + bottomPos);
 			vert += 2;
 			v++;
 		}
 		vertices[vert] = vertices[nbSides * 2 + 2];
 		vertices[vert + 1] = vertices[nbSides * 2 + 3];
-
 		#endregion
 
 		#region Normales
@@ -117,7 +117,7 @@ public class CylinderMesh : MonoBehaviour
 			float cos = Mathf.Cos(rad);
 			float sin = Mathf.Sin(rad);
 
-			normales[vert] = new Vector3(cos, 0f, sin);
+			normales[vert] = rotationVector * new Vector3(cos, 0f, sin);
 			normales[vert + 1] = normales[vert];
 
 			vert += 2;
@@ -227,6 +227,5 @@ public class CylinderMesh : MonoBehaviour
 		mesh.RecalculateBounds();
 		mesh.Optimize();
 
-	/*	transform.up = Vector3.Normalize(topPos - bottomPos);*/
 	}
 }

@@ -17,20 +17,20 @@ public class BodyController : Singleton<BodyController>
 	public void InitFunction()
 	{
 
-		eaveColumnNumber = (int)MainController.sides;
+		eaveColumnNumber = (int)MainController.Instance.sides;
 
-		MainController.eaveColumnHeight = MainController.eaveColumnRadius * 11;
+		MainController.Instance.eaveColumnHeight = MainController.Instance.eaveColumnRadius * 11;
 
-		MainController.bodyCenter = MainController.platformCenter + new Vector3(0, MainController.platformHeight / 2.0f + MainController.eaveColumnHeight / 2.0f, 0);
+		MainController.Instance.bodyCenter = MainController.Instance.platformCenter + new Vector3(0, MainController.Instance.platformHeight / 2.0f + MainController.Instance.eaveColumnHeight / 2.0f, 0);
 
 		body = new GameObject("Body");
-		body.transform.position = MainController.bodyCenter;
-		body.transform.parent = MainController.building.transform;
+		body.transform.position = MainController.Instance.bodyCenter;
+		body.transform.parent = MainController.Instance.building.transform;
 
-		switch (MainController.bodyType)
+		switch (MainController.Instance.bodyType)
 		{
 			#region Chuan_Dou
-			case MainController.BodyType.Chuan_Dou:
+		case MainController.BodyType.Chuan_Dou:
 				CreateRingColumn();
 				break;
 			#endregion
@@ -57,13 +57,13 @@ public class BodyController : Singleton<BodyController>
 	public void CreateRingColumn()
 	{
 		eaveColumnList.Clear();
-		for (int i = 0; i < MainController.platformController.topPointPosList.Count; i++)
+		for (int i = 0; i < MainController.Instance.platformController.topPointPosList.Count; i++)
 		{
-			Vector2 v = new Vector2(MainController.platformController.topPointPosList[i].x - MainController.platformCenter.x, MainController.platformController.topPointPosList[i].z - MainController.platformCenter.z);
+			Vector2 v = new Vector2(MainController.Instance.platformController.topPointPosList[i].x - MainController.Instance.platformCenter.x, MainController.Instance.platformController.topPointPosList[i].z - MainController.Instance.platformCenter.z);
 			v.Normalize();
-			v = v * MainController.platformFrontWidthOffset2Body;
-			Vector3 pos = MainController.platformController.topPointPosList[i] - new Vector3(v.x, 0, v.y) + new Vector3(0, MainController.eaveColumnHeight / 2.0f, 0);
-			CylinderMesh newColumn = CreateColumn(pos, MainController.eaveColumnRadius, MainController.eaveColumnHeight);
+			v = v * MainController.Instance.platformFrontWidthOffset2Body;
+			Vector3 pos = MainController.Instance.platformController.topPointPosList[i] - new Vector3(v.x, 0, v.y) + new Vector3(0, MainController.Instance.eaveColumnHeight / 2.0f, 0);
+			CylinderMesh newColumn = CreateColumn(pos, MainController.Instance.eaveColumnRadius, MainController.Instance.eaveColumnHeight);
 			eaveColumnList.Add(newColumn);
 		}
 	}

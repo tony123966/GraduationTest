@@ -20,15 +20,15 @@ public class RoofController : Singleton<RoofController>
 
 	public void InitFunction()
 	{
-		MainController.allJijaHeight = MainController.eaveColumnHeight * 0.8f;
-		MainController.eave2eaveColumnOffset = MainController.eaveColumnHeight*0.3f;
-		MainController.roofTopCenter = MainController.bodyCenter + new Vector3(0, MainController.eaveColumnHeight / 2.0f + MainController.allJijaHeight, 0);
+		MainController.Instance.allJijaHeight = MainController.Instance.eaveColumnHeight * 0.8f;
+		MainController.Instance.eave2eaveColumnOffset = MainController.Instance.eaveColumnHeight*0.3f;
+		MainController.Instance.roofTopCenter = MainController.Instance.bodyCenter + new Vector3(0, MainController.Instance.eaveColumnHeight / 2.0f + MainController.Instance.allJijaHeight, 0);
 
-		MainController.tileLength = MainController.eaveColumnHeight*0.1f;
+		MainController.Instance.tileLength = MainController.Instance.eaveColumnHeight*0.1f;
 
 		roof = new GameObject("Roof");
-		roof.transform.position = MainController.roofTopCenter;
-		roof.transform.parent = MainController.building.transform;
+		roof.transform.position = MainController.Instance.roofTopCenter;
+		roof.transform.parent = MainController.Instance.building.transform;
 
 		CreateAllMainRidge();
 	}
@@ -59,26 +59,26 @@ public class RoofController : Singleton<RoofController>
 	}
 	public void CreateAllMainRidge()
 	{
-		switch (MainController.roofType) 
+		switch (MainController.Instance.roofType) 
 		{ 
 			//攢尖頂
 			case MainController.RoofType.Zan_Jian_Ding:
 
 			//MainRidge
 			mainRidgeList.Clear();
-			for(int i=0;i<(int)MainController.sides;i++)
+			for(int i=0;i<(int)MainController.Instance.sides;i++)
 			{
 				RidgeStruct newRidgeStruct=CreateRidge();
 				mainRidgeList.Add(newRidgeStruct);
 				//TopControlPoint
-				Vector3 topControlPointPos=MainController.roofTopCenter;
+				Vector3 topControlPointPos=MainController.Instance.roofTopCenter;
 				GameObject topControlPoint = CreateControlPoint(newRidgeStruct.body, topControlPointPos);
 				//Connect2eaveColumnControlPoint
-				Vector3 connect2eaveColumnControlPointPos = MainController.bodyController.eaveColumnList[i].topPos;
+				Vector3 connect2eaveColumnControlPointPos = MainController.Instance.bodyController.eaveColumnList[i].topPos;
 				GameObject connect2eaveColumnControlPoint = CreateControlPoint(newRidgeStruct.body, connect2eaveColumnControlPointPos);
 				//DownControlPoint
-				Vector3 eave2eaveColumnOffsetVector=Vector3.Normalize(new Vector3(MainController.bodyController.eaveColumnList[i].topPos.x - MainController.roofTopCenter.x, 0, MainController.bodyController.eaveColumnList[i].topPos.z - MainController.roofTopCenter.z))*MainController.eave2eaveColumnOffset;
-				Vector3 downControlPointPos = MainController.bodyController.eaveColumnList[i].topPos + eave2eaveColumnOffsetVector;
+				Vector3 eave2eaveColumnOffsetVector=Vector3.Normalize(new Vector3(MainController.Instance.bodyController.eaveColumnList[i].topPos.x - MainController.Instance.roofTopCenter.x, 0, MainController.Instance.bodyController.eaveColumnList[i].topPos.z - MainController.Instance.roofTopCenter.z))*MainController.Instance.eave2eaveColumnOffset;
+				Vector3 downControlPointPos = MainController.Instance.bodyController.eaveColumnList[i].topPos + eave2eaveColumnOffsetVector;
 				GameObject downControlPoint = CreateControlPoint(newRidgeStruct.body, downControlPointPos);
 				//MidControlPoint
 				Vector3 midControlPointPos = (topControlPointPos + connect2eaveColumnControlPointPos)/2.0f;
@@ -90,12 +90,12 @@ public class RoofController : Singleton<RoofController>
 				newRidgeStruct.ridgeCatLine.controlPointList.Add(downControlPoint);
 
 
-				newRidgeStruct.ridgeCatLine.SetCatmullRom(MainController.tileLength);
+				newRidgeStruct.ridgeCatLine.SetCatmullRom(MainController.Instance.tileLength);
 			}
 
 			//Eave
 			eaveList.Clear();
-			for(int i=0;i<(int)MainController.sides;i++)
+			for(int i=0;i<(int)MainController.Instance.sides;i++)
 			{
 				RidgeStruct newRidgeStruct = CreateEave();
 				mainRidgeList.Add(newRidgeStruct);

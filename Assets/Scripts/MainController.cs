@@ -3,51 +3,54 @@ using System.Collections;
 public class MainController : Singleton<MainController>
 {
 	public Vector3 buildingCenter = Vector3.zero;
-	public static GameObject building;
+	public  GameObject building;
 
 	//FormFactor***********************************************************************
 	public enum FormFactorType { ThreeSide = 3, FourSide = 4, FiveSide = 5, SixSide = 6, EightSide=8, };
-	public static FormFactorType sides = FormFactorType.FiveSide;
+	public  FormFactorType sides = FormFactorType.FiveSide;
 	//**********************************************************************************
 	//Roof**************************************************************************
 	public enum RoofType { Zan_Jian_Ding = 0, Wu_Dian_Ding = 1, Lu_Ding = 2 ,Juan_Peng=3};//Zan_Jian_Ding攢尖頂, Wu_Dian_Ding廡殿頂,Lu_Ding盝頂,Juan_Peng卷棚
 	public  RoofType roofType = RoofType.Zan_Jian_Ding;
 
-	public static Vector3 roofTopCenter;
-	public static float tileLength;//瓦片長度
-	public static float allJijaHeight;//總舉架高度
-	public static float eave2eaveColumnOffset;//出檐長度
+	public  Vector3 roofTopCenter;
+	public  float tileLength;//瓦片長度
+	public  float allJijaHeight;//總舉架高度
+	public  float eave2eaveColumnOffset;//出檐長度
 
-	public static RoofController roofController = RoofController.Instance;
+	public  RoofController roofController;// = RoofController.Instance;
 	//**********************************************************************************
 	//Body******************************************************************************
 	public enum BodyType { Chuan_Dou = 0, Tai_Liang = 1 };//Chuan_Dou 穿斗式 ,Tai_Liang 抬梁式
-	public static BodyType bodyType = BodyType.Chuan_Dou;
+	public  BodyType bodyType = BodyType.Chuan_Dou;
 
-	public static int bayNumber = 1;//間數量
+	public  int bayNumber = 1;//間數量
 
-	public static float eaveColumnHeight;
-	public static float eaveColumnRadius = 0.2f;
+	public  float eaveColumnHeight;
+	public  float eaveColumnRadius = 0.2f;
 
-	public static Vector3 bodyCenter;
+	public  Vector3 bodyCenter;
 
-	public static BodyController bodyController = BodyController.Instance;
+	public  BodyController bodyController;// = BodyController.Instance;
 	//**********************************************************************************
 	//Platform**************************************************************************
 	public enum PlatformType { };
-	public static float platformFrontWidth = 5;
-	public static float platformFrontWidthOffset2Body;
+	public  float platformFrontWidth = 5;
+	public  float platformFrontWidthOffset2Body;
 
-	public static float platformHeight;
+	public  float platformHeight;
 
-	public static Vector3 platformCenter=Vector3.zero;
+	public  Vector3 platformCenter=Vector3.zero;
 
-	public static PlatformController platformController = PlatformController.Instance;
+	public  PlatformController platformController;// = PlatformController.Instance;
 	//**********************************************************************************
 	// Use this for initialization
 
 	private void Awake()
 	{
+		//roofController = RoofController.Instance;
+		//bodyController = BodyController.Instance;
+		//platformController = PlatformController.Instance;
 		InitFunction();
 	}
 	private void InitFunction()
@@ -58,8 +61,8 @@ public class MainController : Singleton<MainController>
 
 		platformFrontWidthOffset2Body=platformFrontWidth*0.1f;
 
-		platformController.InitFunction();
-		bodyController.InitFunction();
-		roofController.InitFunction();
+		PlatformController.Instance.InitFunction();
+		BodyController.Instance.InitFunction();
+		RoofController.Instance.InitFunction();
 	}
 }

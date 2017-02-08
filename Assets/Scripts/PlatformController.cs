@@ -18,17 +18,17 @@ public class PlatformController : Singleton<PlatformController>
 
 	public void InitFunction()
 	{
-		float platformRadius = MainController.platformFrontWidth / (2 * Mathf.Cos((Mathf.PI * 2) / (int)MainController.sides) * 2);
+		float platformRadius = MainController.Instance.platformFrontWidth / (2 * Mathf.Cos((Mathf.PI * 2) / (int)MainController.Instance.sides) * 2);
 
-		MainController.platformHeight = MainController.platformFrontWidth*0.1f;
+		MainController.Instance.platformHeight = MainController.Instance.platformFrontWidth*0.1f;
 
 		platform=new GameObject("Platform");
-		platform.transform.position = MainController.platformCenter;
-		platform.transform.parent = MainController.building.transform;
+		platform.transform.position = MainController.Instance.platformCenter;
+		platform.transform.parent = MainController.Instance.building.transform;
 		meshFilter = platform.AddComponent<MeshFilter>();
 		meshRenderer=platform.AddComponent<MeshRenderer>();
 		meshRenderer.material.color = Color.white;
-		CreatePlatform(MainController.platformCenter, platformRadius, MainController.platformHeight, 0);
+		CreatePlatform(MainController.Instance.platformCenter, platformRadius, MainController.Instance.platformHeight, 0);
 	}
 	private void CreatePlatform(Vector3 pos, float radius, float height, float rotateAngle)
 	{
@@ -42,7 +42,7 @@ public class PlatformController : Singleton<PlatformController>
 		Vector3 bottomPos = pos - new Vector3(0, height / 2.0f, 0);
 
 
-		int nbSides = (int)MainController.sides;
+		int nbSides = (int)MainController.Instance.sides;
 		float bottomRadius=radius;
 		float topRadius=radius;
 		int nbVerticesCap = nbSides + 1;

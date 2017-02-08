@@ -4,23 +4,23 @@ using System.Collections.Generic;
 public class CatLine : MonoBehaviour {
 
 	private int numberOfPoints = 300;
-	public List<Transform> controlPointList = new List<Transform>();
+	public List<GameObject> controlPointList = new List<GameObject>();
 	public List<Vector3> innerPointList = new List<Vector3>();
-
+	public List<Vector3> anchorInnerPointlist = new List<Vector3>(); 
 	public void SetLineNumberOfPoints(int number)
 	{
 		numberOfPoints = number;
 	}
-	public void SetCatmullRom()
+	public void SetCatmullRom(float anchorDis=0)
 	{
-		DisplayCatmullromSpline();
+		DisplayCatmullromSpline(anchorDis);
 	}
 	Vector3 ReturnCatmullRomPos(float t, Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3)
 	{
 		Vector3 pos = 0.5f * ((2f * p1) + (-p0 + p2) * t + (2f * p0 - 5f * p1 + 4f * p2 - p3) * t * t + (-p0 + 3f * p1 - 3f * p2 + p3) * t * t * t);
 		return pos;
 	}
-	void DisplayCatmullromSpline()
+	void DisplayCatmullromSpline(float anchorDis)
 	{
 		innerPointList.Clear();
 		Vector3 p0, p1, p2, p3;
@@ -56,11 +56,18 @@ public class CatLine : MonoBehaviour {
 
 				float segmentation = 1 / (float)numberOfPoints;
 				float t = 0;
+				float dis=0;
 				for (int i = 0; i < numberOfPoints; i++)
 				{
 					Vector3 newPos = ReturnCatmullRomPos(t, p0, p1, p2, p3);
 					innerPointList.Add(newPos);
+					if (dis >= anchorDis)
+					{
+						anchorInnerPointlist.Add(newPos);
+						dis=0;
+					}
 					t += segmentation;
+					dis+=Vector3.Magnitude(innerPointList[i]-innerPointList[(i>0?(i-1):0)]);
 				}
 			}
 		}

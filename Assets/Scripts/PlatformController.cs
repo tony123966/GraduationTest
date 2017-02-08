@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-public class PlatformController :MonoBehaviour
+public class PlatformController : Singleton<PlatformController>
 {
 
 	public GameObject platform=null;
@@ -11,27 +11,20 @@ public class PlatformController :MonoBehaviour
 	public  List<Vector3> topPointPosList;
 	public  List<Vector3> bottomPointPosList;
 
-	private static PlatformController instance;
-	public static PlatformController Instance
-	{
-		get
-		{
-			return instance;
-		}
-	}
+
 	//***********************************************************************
 
 	//***********************************************************************
-	PlatformController() 
-	{ 
-		instance=this;
-	}
+
 	public void InitFunction()
 	{
 		float platformRadius = MainController.platformFrontWidth / (2 * Mathf.Cos((Mathf.PI * 2) / (int)MainController.sides) * 2);
 
+		MainController.platformHeight = MainController.platformFrontWidth*0.1f;
+
 		platform=new GameObject("Platform");
 		platform.transform.position = MainController.platformCenter;
+		platform.transform.parent = MainController.building.transform;
 		meshFilter = platform.AddComponent<MeshFilter>();
 		meshRenderer=platform.AddComponent<MeshRenderer>();
 		meshRenderer.material.color = Color.white;
@@ -241,7 +234,7 @@ public class PlatformController :MonoBehaviour
 		mesh.Optimize();
 
 		//platform.transform.up = Vector3.Normalize(topPos - bottomPos);
-		transform.RotateAround(bottomPos, topPos - bottomPos, Vector3.Angle(Vector3.up, topPos - bottomPos));
+		platform.transform.RotateAround(bottomPos, topPos - bottomPos, Vector3.Angle(Vector3.up, topPos - bottomPos));
 	}
 	/*private void CreatePlatform(Vector3 pos, float radius, float height, float rotateAngle)
 	{

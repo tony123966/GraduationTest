@@ -8,27 +8,38 @@ public class PlatformController : Singleton<PlatformController>
 	MeshFilter meshFilter;
 	MeshRenderer meshRenderer;
 
+	//Platform**************************************************************************
+	public enum PlatformType { };
+	public float platformFrontWidth = 7;
+	public float platformFrontWidthOffset2Body;
+
+	public float platformHeight;
+
+	public Vector3 platformCenter = Vector3.zero;
+	//**********************************************************************************
 	public  List<Vector3> topPointPosList;
 	public  List<Vector3> bottomPointPosList;
 
 
 	//***********************************************************************
 
-	//***********************************************************************
-
 	public void InitFunction()
 	{
-		float platformRadius = MainController.Instance.platformFrontWidth / (2 * Mathf.Cos((Mathf.PI * 2) / (int)MainController.Instance.sides) * 2);
+		//初始值******************************************************************************
+		float platformRadius = platformFrontWidth / (2 * Mathf.Cos((Mathf.PI * 2) / (int)MainController.Instance.sides) * 2);
 
-		MainController.Instance.platformHeight = MainController.Instance.platformFrontWidth*0.1f;
+		platformHeight =platformFrontWidth*0.1f;
 
+		platformFrontWidthOffset2Body = platformFrontWidth * 0.1f;
+
+		//***********************************************************************************
 		platform=new GameObject("Platform");
-		platform.transform.position = MainController.Instance.platformCenter;
+		platform.transform.position =platformCenter;
 		platform.transform.parent = MainController.Instance.building.transform;
 		meshFilter = platform.AddComponent<MeshFilter>();
 		meshRenderer=platform.AddComponent<MeshRenderer>();
 		meshRenderer.material.color = Color.white;
-		CreatePlatform(MainController.Instance.platformCenter, platformRadius, MainController.Instance.platformHeight, 0);
+		CreatePlatform(platformCenter, platformRadius, platformHeight, 0);
 	}
 	private void CreatePlatform(Vector3 pos, float radius, float height, float rotateAngle)
 	{

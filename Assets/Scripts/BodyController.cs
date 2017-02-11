@@ -4,11 +4,21 @@ using System.Collections.Generic;
 public class BodyController : Singleton<BodyController>
 {
 	public GameObject body = null;
+	//Body******************************************************************************
 	const float CUN = 3.33f;
+	public enum BodyType { Chuan_Dou = 0, Tai_Liang = 1 };//Chuan_Dou 穿斗式 ,Tai_Liang 抬梁式
+	public BodyType bodyType = BodyType.Chuan_Dou;
 
+	public int bayNumber = 1;//間數量
+
+	public float eaveColumnHeight;
+	public float eaveColumnRadius = 0.2f;
+
+	public Vector3 bodyCenter;
+
+	//**********************************************************************************
 
 	//***********************************************************************
-	//public bool twoSide=false;
 	public int eaveColumnNumber;
 	public List<CylinderMesh> eaveColumnList = new List<CylinderMesh>();
 	public List<CylinderMesh> hypostyleColumnList = new List<CylinderMesh>();
@@ -16,21 +26,21 @@ public class BodyController : Singleton<BodyController>
 
 	public void InitFunction()
 	{
-
+		//初始值******************************************************************************
 		eaveColumnNumber = (int)MainController.Instance.sides;
 
-		MainController.Instance.eaveColumnHeight = MainController.Instance.eaveColumnRadius * 11;
+		eaveColumnHeight = eaveColumnRadius * 11;
 
-		MainController.Instance.bodyCenter = MainController.Instance.platformCenter + new Vector3(0, MainController.Instance.platformHeight / 2.0f + MainController.Instance.eaveColumnHeight / 2.0f, 0);
-
+		bodyCenter = PlatformController.Instance.platformCenter + new Vector3(0, PlatformController.Instance.platformHeight / 2.0f + eaveColumnHeight / 2.0f, 0);
+		//************************************************************************************
 		body = new GameObject("Body");
-		body.transform.position = MainController.Instance.bodyCenter;
+		body.transform.position = bodyCenter;
 		body.transform.parent = MainController.Instance.building.transform;
 
-		switch (MainController.Instance.bodyType)
+		switch (bodyType)
 		{
 			#region Chuan_Dou
-		case MainController.BodyType.Chuan_Dou:
+		case BodyType.Chuan_Dou:
 				CreateRingColumn();
 				break;
 			#endregion
@@ -57,13 +67,13 @@ public class BodyController : Singleton<BodyController>
 	public void CreateRingColumn()
 	{
 		eaveColumnList.Clear();
-		for (int i = 0; i < MainController.Instance.platformController.topPointPosList.Count; i++)
+		for (int i = 0; i < PlatformController.Instance.topPointPosList.Count; i++)
 		{
-			Vector2 v = new Vector2(MainController.Instance.platformController.topPointPosList[i].x - MainController.Instance.platformCenter.x, MainController.Instance.platformController.topPointPosList[i].z - MainController.Instance.platformCenter.z);
+			Vector2 v = new Vector2(PlatformController.Instance.topPointPosList[i].x - PlatformController.Instance.platformCenter.x, PlatformController.Instance.topPointPosList[i].z - PlatformController.Instance.platformCenter.z);
 			v.Normalize();
-			v = v * MainController.Instance.platformFrontWidthOffset2Body;
-			Vector3 pos = MainController.Instance.platformController.topPointPosList[i] - new Vector3(v.x, 0, v.y) + new Vector3(0, MainController.Instance.eaveColumnHeight / 2.0f, 0);
-			CylinderMesh newColumn = CreateColumn(pos, MainController.Instance.eaveColumnRadius, MainController.Instance.eaveColumnHeight);
+			v = v * PlatformController.Instance.platformFrontWidthOffset2Body;
+			Vector3 pos = PlatformController.Instance.topPointPosList[i] - new Vector3(v.x, 0, v.y) + new Vector3(0, eaveColumnHeight / 2.0f, 0);
+			CylinderMesh newColumn = CreateColumn(pos, eaveColumnRadius, eaveColumnHeight);
 			eaveColumnList.Add(newColumn);
 		}
 	}

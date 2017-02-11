@@ -69,6 +69,7 @@ public class CatLine : MonoBehaviour {
 					t += segmentation;
 					dis+=Vector3.Magnitude(innerPointList[i]-innerPointList[(i>0?(i-1):0)]);
 				}
+
 			}
 		}
 	}

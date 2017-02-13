@@ -1,76 +1,142 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-public class CatLine : MonoBehaviour {
-
-	private int numberOfPoints = 300;
+public class CatLine : MonoBehaviour
+{
+	public enum CatLineType { ObjectList = 0, PositionList = 1 };
+	private int numberOfPoints = 100;
 	public List<GameObject> controlPointList = new List<GameObject>();
+	public List<Vector3> controlPointPosList = new List<Vector3>();
 	public List<Vector3> innerPointList = new List<Vector3>();
-	public List<Vector3> anchorInnerPointlist = new List<Vector3>(); 
+	public List<Vector3> anchorInnerPointlist = new List<Vector3>();
+	Vector3 p0,p1,p2,p3;
 	public void SetLineNumberOfPoints(int number)
 	{
 		numberOfPoints = number;
 	}
-	public void SetCatmullRom(float anchorDis=0)
+	public void SetCatmullRom(float anchorDis = 0, int catLineType = (int)CatLineType.ObjectList)
 	{
-		DisplayCatmullromSpline(anchorDis);
+		DisplayCatmullromSpline(anchorDis, catLineType);
 	}
+
 	Vector3 ReturnCatmullRomPos(float t, Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3)
 	{
 		Vector3 pos = 0.5f * ((2f * p1) + (-p0 + p2) * t + (2f * p0 - 5f * p1 + 4f * p2 - p3) * t * t + (-p0 + 3f * p1 - 3f * p2 + p3) * t * t * t);
 		return pos;
 	}
-	void DisplayCatmullromSpline(float anchorDis)
+	void DisplayCatmullromSpline(float anchorDis, int catLineType)
 	{
 		innerPointList.Clear();
-		Vector3 p0, p1, p2, p3;
-
-		if (controlPointList.Count < 2) return;
-		else if (controlPointList.Count == 2)
+		anchorInnerPointlist.Clear();
+		switch (catLineType)
 		{
-			p0 = controlPointList[0].transform.position;
-			p1 = controlPointList[0].transform.position;
-			p2 = controlPointList[1].transform.position;
-			p3 = controlPointList[1].transform.position;
-
-
-			float segmentation = 1 / (float)numberOfPoints;
-			float t = 0;
-			for (int i = 0; i < numberOfPoints; i++)
-			{
-				Vector3 newPos = ReturnCatmullRomPos(t, p0, p1, p2, p3);
-				innerPointList.Add(newPos);
-				t += segmentation;
-			}
-		}
-		else
-		{
-			for (int index = 0; index < controlPointList.Count - 1; index++)
-			{
-
-				p0 = controlPointList[Mathf.Max(index - 1, 0)].transform.position;
-				p1 = controlPointList[index].transform.position;
-				p2 = controlPointList[Mathf.Min(index + 1, controlPointList.Count - 1)].transform.position;
-				p3 = controlPointList[Mathf.Min(index + 2, controlPointList.Count - 1)].transform.position;
-
-
-				float segmentation = 1 / (float)numberOfPoints;
-				float t = 0;
-				float dis=0;
-				for (int i = 0; i < numberOfPoints; i++)
+			case (int)CatLineType.ObjectList:
+				if (controlPointList.Count < 2) return;
+				else if (controlPointList.Count == 2)
 				{
-					Vector3 newPos = ReturnCatmullRomPos(t, p0, p1, p2, p3);
-					innerPointList.Add(newPos);
-					if (dis >= anchorDis)
-					{
-						anchorInnerPointlist.Add(newPos);
-						dis=0;
-					}
-					t += segmentation;
-					dis+=Vector3.Magnitude(innerPointList[i]-innerPointList[(i>0?(i-1):0)]);
-				}
+					p0 = controlPointList[0].transform.position;
+					p1 = controlPointList[0].transform.position;
+					p2 = controlPointList[1].transform.position;
+					p3 = controlPointList[1].transform.position;
 
-			}
+
+					float segmentation = 1 / (float)numberOfPoints;
+					float t = 0;
+					for (int i = 0; i < numberOfPoints; i++)
+					{
+						Vector3 newPos = ReturnCatmullRomPos(t, p0, p1, p2, p3);
+						innerPointList.Add(newPos);
+						t += segmentation;
+					}
+				}
+				else
+				{
+					for (int index = 0; index < controlPointList.Count - 1; index++)
+					{
+
+						p0 = controlPointList[Mathf.Max(index - 1, 0)].transform.position;
+						p1 = controlPointList[index].transform.position;
+						p2 = controlPointList[Mathf.Min(index + 1, controlPointList.Count - 1)].transform.position;
+						p3 = controlPointList[Mathf.Min(index + 2, controlPointList.Count - 1)].transform.position;
+						float segmentation = 1 / (float)(numberOfPoints);
+						float t = 0;
+						float dis = 0;
+						for (int i = 0; i < numberOfPoints; i++)
+						{
+							Vector3 newPos = ReturnCatmullRomPos(t, p0, p1, p2, p3);
+							innerPointList.Add(newPos);
+							if (anchorDis == 0)
+							{
+								anchorInnerPointlist.Add(newPos);
+							}
+							else
+							{
+								if (dis >= anchorDis)
+								{
+									anchorInnerPointlist.Add(newPos);
+									dis = 0;
+								}
+								dis += Vector3.Magnitude(innerPointList[i] - innerPointList[(i > 0 ? (i - 1) : 0)]);
+							}
+							t += segmentation;
+						}
+					}
+				}
+				break;
+			case (int)CatLineType.PositionList:
+				if (controlPointPosList.Count < 2) return;
+				else if (controlPointPosList.Count == 2)
+				{
+					p0 = controlPointPosList[0];
+					p1 = controlPointPosList[0];
+					p2 = controlPointPosList[1];
+					p3 = controlPointPosList[1];
+
+
+					float segmentation = 1 / (float)numberOfPoints;
+					float t = 0;
+					for (int i = 0; i < numberOfPoints; i++)
+					{
+						Vector3 newPos = ReturnCatmullRomPos(t, p0, p1, p2, p3);
+						innerPointList.Add(newPos);
+						t += segmentation;
+					}
+				}
+				else
+				{
+					for (int index = 0; index < controlPointPosList.Count - 1; index++)
+					{
+
+						p0 = controlPointPosList[Mathf.Max(index - 1, 0)];
+						p1 = controlPointPosList[index];
+						p2 = controlPointPosList[Mathf.Min(index + 1, controlPointPosList.Count - 1)];
+						p3 = controlPointPosList[Mathf.Min(index + 2, controlPointPosList.Count - 1)];
+						float segmentation = 1 / (float)(numberOfPoints);
+						float t = 0;
+						float dis = 0;
+						for (int i = 0; i < numberOfPoints; i++)
+						{
+							Vector3 newPos = ReturnCatmullRomPos(t, p0, p1, p2, p3);
+							innerPointList.Add(newPos);
+							if (anchorDis == 0)
+							{
+								anchorInnerPointlist.Add(newPos);
+							}
+							else
+							{
+								if (dis >= anchorDis)
+								{
+									anchorInnerPointlist.Add(newPos);
+									dis = 0;
+								}
+								dis += Vector3.Magnitude(innerPointList[i] - innerPointList[(i > 0 ? (i - 1) : 0)]);
+							}
+							t += segmentation;
+						}
+					}
+				}
+				break;
 		}
+
 	}
 }

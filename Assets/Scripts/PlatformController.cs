@@ -30,7 +30,7 @@ public class PlatformController : Singleton<PlatformController>
 
 		platformHeight =platformFrontWidth*0.1f;
 
-		platformFrontWidthOffset2Body = (platformFrontWidth * 0.3f);
+		platformFrontWidthOffset2Body = (platformFrontWidth * 0.4f);
 
 		//***********************************************************************************
 		platform=new GameObject("Platform");

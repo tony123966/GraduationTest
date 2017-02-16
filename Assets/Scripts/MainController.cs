@@ -7,7 +7,7 @@ public class MainController : Singleton<MainController>
 
 	//FormFactor***********************************************************************
 	public enum FormFactorType { ThreeSide = 3, FourSide = 4, FiveSide = 5, SixSide = 6, EightSide=8 };
-	public FormFactorType sides = FormFactorType.FiveSide;
+	public FormFactorType sides = FormFactorType.ThreeSide;
 	//**********************************************************************************
 
 

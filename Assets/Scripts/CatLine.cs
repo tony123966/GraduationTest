@@ -4,7 +4,7 @@ using System.Collections.Generic;
 public class CatLine : MonoBehaviour
 {
 	public enum CatLineType { ObjectList = 0, PositionList = 1 };
-	private int numberOfPoints = 100;
+	private int numberOfPoints = 50;
 	public List<GameObject> controlPointList = new List<GameObject>();
 	public List<Vector3> controlPointPosList = new List<Vector3>();
 	public List<Vector3> innerPointList = new List<Vector3>();

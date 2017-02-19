@@ -24,6 +24,81 @@ public class CatLine : MonoBehaviour
 		Vector3 pos = 0.5f * ((2f * p1) + (-p0 + p2) * t + (2f * p0 - 5f * p1 + 4f * p2 - p3) * t * t + (-p0 + 3f * p1 - 3f * p2 + p3) * t * t * t);
 		return pos;
 	}
+	public List<Vector3> CalculateAnchorPosByList(List<Vector3> list, float anchorDis)
+	{
+		float dis = 0;
+		List<Vector3> newList = new List<Vector3>();
+		newList.Add(list[list.Count - 1]);//反著加入
+		for(int i=list.Count-1;i>1;i--)
+		{
+			dis += Vector3.Distance(list[i], list[i-1]);
+			if (dis >= anchorDis)
+			{
+				newList.Add(list[i]);
+				dis = 0;
+			}	
+		}
+		return newList;
+	}
+	public void CalculateInnerPointByList(List<Vector3> list, float anchorDis) 
+	{
+		if (list.Count < 2) return;
+		else if (list.Count == 2)
+		{
+			p0 = list[0];
+			p1 = list[0];
+			p2 = list[1];
+			p3 = list[1];
+
+
+			float segmentation = 1 / (float)numberOfPoints;
+			float t = 0;
+			for (int i = 0; i < numberOfPoints; i++)
+			{
+				t += segmentation;
+
+				Vector3 newPos = ReturnCatmullRomPos(t, p0, p1, p2, p3);
+				innerPointList.Add(newPos);
+				
+			}
+		}
+		else
+		{
+			for (int index = 0; index < controlPointList.Count - 1; index++)
+			{
+
+				p0 = list[Mathf.Max(index - 1, 0)];
+				p1 = list[index];
+				p2 = list[Mathf.Min(index + 1, controlPointList.Count - 1)];
+				p3 = list[Mathf.Min(index + 2, controlPointList.Count - 1)];
+				float segmentation = 1 / (float)(numberOfPoints);
+				float t = 0;
+				float dis = 0;
+				for (int i = 0; i < numberOfPoints-1; i++)
+				{
+					t += segmentation;
+
+					Vector3 newPos = ReturnCatmullRomPos(t, p0, p1, p2, p3);
+					innerPointList.Add(newPos);
+					if (anchorDis == 0)
+					{
+						anchorInnerPointlist.Add(newPos);
+					}
+					else
+					{
+						if (dis >= anchorDis)
+						{
+							anchorInnerPointlist.Add(newPos);
+							dis = 0;
+						}
+						dis += Vector3.Distance(innerPointList[i] , innerPointList[i+1]);
+					}
+					
+				}
+			}
+		}
+	
+	}
 	void DisplayCatmullromSpline(float anchorDis, int catLineType)
 	{
 		innerPointList.Clear();
@@ -31,110 +106,15 @@ public class CatLine : MonoBehaviour
 		switch (catLineType)
 		{
 			case (int)CatLineType.ObjectList:
-				if (controlPointList.Count < 2) return;
-				else if (controlPointList.Count == 2)
+				List<Vector3> positionList = new List<Vector3>();
+				for(int i=0;i<controlPointList.Count;i++)
 				{
-					p0 = controlPointList[0].transform.position;
-					p1 = controlPointList[0].transform.position;
-					p2 = controlPointList[1].transform.position;
-					p3 = controlPointList[1].transform.position;
-
-
-					float segmentation = 1 / (float)numberOfPoints;
-					float t = 0;
-					for (int i = 0; i < numberOfPoints; i++)
-					{
-						Vector3 newPos = ReturnCatmullRomPos(t, p0, p1, p2, p3);
-						innerPointList.Add(newPos);
-						t += segmentation;
-					}
+					positionList.Add(controlPointList[i].transform.position);
 				}
-				else
-				{
-					for (int index = 0; index < controlPointList.Count - 1; index++)
-					{
-
-						p0 = controlPointList[Mathf.Max(index - 1, 0)].transform.position;
-						p1 = controlPointList[index].transform.position;
-						p2 = controlPointList[Mathf.Min(index + 1, controlPointList.Count - 1)].transform.position;
-						p3 = controlPointList[Mathf.Min(index + 2, controlPointList.Count - 1)].transform.position;
-						float segmentation = 1 / (float)(numberOfPoints);
-						float t = 0;
-						float dis = 0;
-						for (int i = 0; i < numberOfPoints; i++)
-						{
-							Vector3 newPos = ReturnCatmullRomPos(t, p0, p1, p2, p3);
-							innerPointList.Add(newPos);
-							if (anchorDis == 0)
-							{
-								anchorInnerPointlist.Add(newPos);
-							}
-							else
-							{
-								if (dis >= anchorDis)
-								{
-									anchorInnerPointlist.Add(newPos);
-									dis = 0;
-								}
-								dis += Vector3.Magnitude(innerPointList[i] - innerPointList[(i > 0 ? (i - 1) : 0)]);
-							}
-							t += segmentation;
-						}
-					}
-				}
+				CalculateInnerPointByList(positionList, anchorDis);
 				break;
 			case (int)CatLineType.PositionList:
-				if (controlPointPosList.Count < 2) return;
-				else if (controlPointPosList.Count == 2)
-				{
-					p0 = controlPointPosList[0];
-					p1 = controlPointPosList[0];
-					p2 = controlPointPosList[1];
-					p3 = controlPointPosList[1];
-
-
-					float segmentation = 1 / (float)numberOfPoints;
-					float t = 0;
-					for (int i = 0; i < numberOfPoints; i++)
-					{
-						Vector3 newPos = ReturnCatmullRomPos(t, p0, p1, p2, p3);
-						innerPointList.Add(newPos);
-						t += segmentation;
-					}
-				}
-				else
-				{
-					for (int index = 0; index < controlPointPosList.Count - 1; index++)
-					{
-
-						p0 = controlPointPosList[Mathf.Max(index - 1, 0)];
-						p1 = controlPointPosList[index];
-						p2 = controlPointPosList[Mathf.Min(index + 1, controlPointPosList.Count - 1)];
-						p3 = controlPointPosList[Mathf.Min(index + 2, controlPointPosList.Count - 1)];
-						float segmentation = 1 / (float)(numberOfPoints);
-						float t = 0;
-						float dis = 0;
-						for (int i = 0; i < numberOfPoints; i++)
-						{
-							Vector3 newPos = ReturnCatmullRomPos(t, p0, p1, p2, p3);
-							innerPointList.Add(newPos);
-							if (anchorDis == 0)
-							{
-								anchorInnerPointlist.Add(newPos);
-							}
-							else
-							{
-								if (dis >= anchorDis)
-								{
-									anchorInnerPointlist.Add(newPos);
-									dis = 0;
-								}
-								dis += Vector3.Magnitude(innerPointList[i] - innerPointList[(i > 0 ? (i - 1) : 0)]);
-							}
-							t += segmentation;
-						}
-					}
-				}
+				CalculateInnerPointByList(controlPointPosList, anchorDis);
 				break;
 		}
 

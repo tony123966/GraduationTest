@@ -10,7 +10,7 @@ public class PlatformController : Singleton<PlatformController>
 
 	//Platform**************************************************************************
 	public enum PlatformType { };
-	public float platformFrontWidth = 9;
+	public float platformFrontWidth = 20;
 	public float platformFrontWidthOffset2Body;
 
 	public float platformHeight;
@@ -30,7 +30,7 @@ public class PlatformController : Singleton<PlatformController>
 
 		platformHeight =platformFrontWidth*0.1f;
 
-		platformFrontWidthOffset2Body = (platformFrontWidth * 0.5f);
+		platformFrontWidthOffset2Body = (platformFrontWidth * 0.3f);
 
 		//***********************************************************************************
 		platform=new GameObject("Platform");

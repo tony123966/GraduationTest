@@ -12,7 +12,7 @@ public class BodyController : Singleton<BodyController>
 	public int bayNumber = 1;//間數量
 
 	public float eaveColumnHeight;
-	public float eaveColumnRadius = 0.2f;
+	public float eaveColumnRadius = 1f;
 
 	public Vector3 bodyCenter;
 

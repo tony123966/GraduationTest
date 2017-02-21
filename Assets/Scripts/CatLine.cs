@@ -24,8 +24,10 @@ public class CatLine : MonoBehaviour
 		Vector3 pos = 0.5f * ((2f * p1) + (-p0 + p2) * t + (2f * p0 - 5f * p1 + 4f * p2 - p3) * t * t + (-p0 + 3f * p1 - 3f * p2 + p3) * t * t * t);
 		return pos;
 	}
-	public List<Vector3> CalculateAnchorPosByList(List<Vector3> list, float anchorDis)
+	public List<Vector3> CalculateAnchorPosByInnerPointList(List<Vector3> list, float anchorDis)
 	{
+		if(list.Count==0)return list;
+
 		float dis = 0;
 		List<Vector3> newList = new List<Vector3>();
 		newList.Add(list[list.Count - 1]);//反著加入

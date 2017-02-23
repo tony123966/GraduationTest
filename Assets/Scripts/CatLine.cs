@@ -24,12 +24,24 @@ public class CatLine : MonoBehaviour
 		Vector3 pos = 0.5f * ((2f * p1) + (-p0 + p2) * t + (2f * p0 - 5f * p1 + 4f * p2 - p3) * t * t + (-p0 + 3f * p1 - 3f * p2 + p3) * t * t * t);
 		return pos;
 	}
-	public List<Vector3> CalculateAnchorPosByInnerPointList(List<Vector3> list, float anchorDis)
+	public List<Vector3> CalculateAnchorPosByInnerPointList(List<Vector3> list, int startIndex,int endIndex,float anchorDis)
 	{
 		if(list.Count==0)return list;
 
 		float dis = 0;
 		List<Vector3> newList = new List<Vector3>();
+		newList.Add(list[startIndex]);
+		int dir=((endIndex - startIndex) > 0 ? 1 : -1);
+		for (int i = startIndex; ((endIndex - startIndex) > 0 ? (i < endIndex - dir) : (i > endIndex - dir)); i += dir)
+		{
+			dis += Vector3.Distance(list[i], list[i +dir]);
+			if (dis >= anchorDis)
+			{
+				newList.Add(list[i]);
+				dis = 0;
+			}
+		}
+/*
 		newList.Add(list[list.Count - 1]);//反著加入
 		for(int i=list.Count-1;i>1;i--)
 		{
@@ -39,7 +51,7 @@ public class CatLine : MonoBehaviour
 				newList.Add(list[i]);
 				dis = 0;
 			}	
-		}
+		}*/
 		return newList;
 	}
 	public void CalculateInnerPointByList(List<Vector3> list, float anchorDis) 

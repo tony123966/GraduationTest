@@ -67,7 +67,8 @@ public class CatLine : MonoBehaviour
 
 			float segmentation = 1 / (float)numberOfPoints;
 			float t = 0;
-			for (int i = 0; i < numberOfPoints; i++)
+			float dis = 0;
+			for (int i = 0; i < numberOfPoints-1; i++)
 			{
 				t += segmentation;
 
@@ -75,40 +76,62 @@ public class CatLine : MonoBehaviour
 				innerPointList.Add(newPos);
 				
 			}
+			for (int i = 0; i < innerPointList.Count - 1; i++)
+			{
+				if (anchorDis == 0)
+				{
+					anchorInnerPointlist.Add(innerPointList[i]);
+				}
+				else
+				{
+					if (dis >= anchorDis)
+					{
+						anchorInnerPointlist.Add(innerPointList[i]);
+						dis = 0;
+					}
+					dis += Vector3.Distance(innerPointList[i], innerPointList[i + 1]);
+				}
+
+			}
 		}
 		else
 		{
-			for (int index = 0; index < controlPointList.Count - 1; index++)
+			for (int index = 0; index < list.Count - 1; index++)
 			{
 
 				p0 = list[Mathf.Max(index - 1, 0)];
 				p1 = list[index];
-				p2 = list[Mathf.Min(index + 1, controlPointList.Count - 1)];
-				p3 = list[Mathf.Min(index + 2, controlPointList.Count - 1)];
+				p2 = list[Mathf.Min(index + 1, list.Count - 1)];
+				p3 = list[Mathf.Min(index + 2, list.Count - 1)];
 				float segmentation = 1 / (float)(numberOfPoints);
 				float t = 0;
-				float dis = 0;
+			
 				for (int i = 0; i < numberOfPoints-1; i++)
 				{
 					t += segmentation;
 
 					Vector3 newPos = ReturnCatmullRomPos(t, p0, p1, p2, p3);
-					innerPointList.Add(newPos);
-					if (anchorDis == 0)
-					{
-						anchorInnerPointlist.Add(newPos);
-					}
-					else
-					{
-						if (dis >= anchorDis)
-						{
-							anchorInnerPointlist.Add(newPos);
-							dis = 0;
-						}
-						dis += Vector3.Distance(innerPointList[i] , innerPointList[i+1]);
-					}
-					
+					innerPointList.Add(newPos);		
 				}
+				
+			}
+			float dis = 0;
+			for (int i = 0; i < innerPointList.Count - 1; i++)
+			{
+				if (anchorDis == 0)
+				{
+					anchorInnerPointlist.Add(innerPointList[i]);
+				}
+				else
+				{
+					if (dis >= anchorDis)
+					{
+						anchorInnerPointlist.Add(innerPointList[i]);
+						dis = 0;
+					}
+					dis += Vector3.Distance(innerPointList[i], innerPointList[i + 1]);
+				}
+
 			}
 		}
 	

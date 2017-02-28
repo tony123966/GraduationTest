@@ -67,6 +67,7 @@ public class BodyController : Singleton<BodyController>
 	public void CreateRingColumn()
 	{
 		eaveColumnList.Clear();
+		 PlatformController.Instance.topPointPosList.Reverse();
 		for (int i = 0; i < PlatformController.Instance.topPointPosList.Count; i++)
 		{
 			Vector2 v = new Vector2(PlatformController.Instance.topPointPosList[i].x - PlatformController.Instance.platformCenter.x, PlatformController.Instance.topPointPosList[i].z - PlatformController.Instance.platformCenter.z);

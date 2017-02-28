@@ -10,7 +10,7 @@ public class PlatformController : Singleton<PlatformController>
 
 	//Platform**************************************************************************
 	public enum PlatformType { };
-	public float platformFrontWidth = 20;
+	public float platformFrontWidth = 40;
 	public float platformFrontWidthOffset2Body;
 
 	public float platformHeight;
@@ -26,11 +26,12 @@ public class PlatformController : Singleton<PlatformController>
 	public void InitFunction()
 	{
 		//初始值******************************************************************************
-		float platformRadius = platformFrontWidth / (2 * Mathf.Cos((Mathf.PI * 2) / (int)MainController.Instance.sides) * 2);
+		//float platformRadius = platformFrontWidth / (2 * Mathf.Cos((Mathf.PI * 2) / (int)MainController.Instance.sides) * 2);
+		float platformRadius = platformFrontWidth*5;
 
 		platformHeight =platformFrontWidth*0.1f;
 
-		platformFrontWidthOffset2Body = (platformFrontWidth * 0.3f);
+		platformFrontWidthOffset2Body = (platformFrontWidth * 0.1f);
 
 		//***********************************************************************************
 		platform=new GameObject("Platform");
@@ -39,7 +40,7 @@ public class PlatformController : Singleton<PlatformController>
 		meshFilter = platform.AddComponent<MeshFilter>();
 		meshRenderer=platform.AddComponent<MeshRenderer>();
 		meshRenderer.material.color = Color.white;
-		CreatePlatform(platformCenter, platformRadius, platformHeight, 0);
+		CreatePlatform(platformCenter, 10, platformHeight, 0);
 	}
 	private void CreatePlatform(Vector3 pos, float radius, float height, float rotateAngle)
 	{

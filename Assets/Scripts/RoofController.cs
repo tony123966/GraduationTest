@@ -76,6 +76,7 @@ public class RoofController : Singleton<RoofController>
 
 	private float allJijaHeight;//總舉架高度
 	private float eave2eaveColumnOffset;//出檐長度
+	private float eave2FlyEaveOffset;
 	private float beamsHeight;//總梁柱高度
 	private float Wu_Dian_DingMainRidgeWidth;//廡殿頂主脊長度
 	private float Lu_DingMainRidgeOffset;
@@ -121,11 +122,12 @@ public class RoofController : Singleton<RoofController>
 	{
 		//初始值******************************************************************************
 		allJijaHeight = BodyController.Instance.eaveColumnHeight * 0.9f;
-		eave2eaveColumnOffset = BodyController.Instance.eaveColumnHeight * 0.4f;
+		eave2eaveColumnOffset = BodyController.Instance.eaveColumnHeight * 0.8f;
+		eave2FlyEaveOffset = eave2eaveColumnOffset/2.0f;
 		beamsHeight = BodyController.Instance.eaveColumnHeight * 0.1f;
 		roofTopCenter = BodyController.Instance.bodyCenter + new Vector3(0, BodyController.Instance.eaveColumnHeight / 2.0f + allJijaHeight, 0);
-		Wu_Dian_DingMainRidgeWidth = BodyController.Instance.eaveColumnHeight * 0.3f;
-		Lu_DingMainRidgeOffset = BodyController.Instance.eaveColumnHeight * 0.3f;
+		Wu_Dian_DingMainRidgeWidth = BodyController.Instance.eaveColumnHeight * 0.4f;
+		Lu_DingMainRidgeOffset = BodyController.Instance.eaveColumnHeight * 0.6f;
 
 
 		roundTileModelStruct = new ModelStruct(roundTileModel, roundTileModelRotation, roundTileModelScale);
@@ -432,6 +434,7 @@ public class RoofController : Singleton<RoofController>
 	int FindNearestPointInList2Plane(Plane plane, List<Vector3> list, int startIndex, int endIndex)
 	{
 		float pointMinDis2Plane = float.MaxValue;
+/*
 		while (true)
 		{
 			float dis = Mathf.Abs(plane.GetDistanceToPoint(list[startIndex]));
@@ -444,13 +447,25 @@ public class RoofController : Singleton<RoofController>
 			{
 				return startIndex;
 			}
+		}*/
+		int index = startIndex;
+		int dir = ((endIndex - startIndex) > 0 ? 1 : -1);
+		for (int i = startIndex; ((dir==1) ? (i < endIndex) : (i > endIndex)); i += dir)
+		{
+			float dis = Mathf.Abs(plane.GetDistanceToPoint(list[i]));
+			if (dis < pointMinDis2Plane)
+			{
+				pointMinDis2Plane = dis;
+				index=i;
+			}
 		}
+		return index;
 
 	}
 	int FindNearestPointInList2Point(Vector3 point, List<Vector3> list, int startIndex, int endIndex)
 	{
 		float pointMinDis2Plane = float.MaxValue;
-		while (true)
+	/*	while (true)
 		{
 			float dis = Vector3.Magnitude((list[startIndex] - point));
 			if (dis < pointMinDis2Plane)
@@ -462,7 +477,20 @@ public class RoofController : Singleton<RoofController>
 			{
 				return startIndex;
 			}
+		}*/
+
+		int index = startIndex;
+		int dir = ((endIndex - startIndex) > 0 ? 1 : -1);
+		for (int i = startIndex; ((dir == 1) ? (i < endIndex) : (i > endIndex)); i += dir)
+		{
+			float dis = Vector3.Magnitude((list[i] - point));
+			if (dis < pointMinDis2Plane)
+			{
+				pointMinDis2Plane = dis;
+				index = i;
+			}
 		}
+		return index;
 	}
 	float CurveInnerPointDis(RidgeStruct list)
 	{
@@ -509,10 +537,10 @@ public class RoofController : Singleton<RoofController>
 
 			newRidgeStruct.ridgeCatLine.SetLineNumberOfPoints(1000);
 			newRidgeStruct.ridgeCatLine.SetCatmullRom(anchorDis);
-		/*	for(int i=0;i<newRidgeStruct.ridgeCatLine.anchorInnerPointlist.Count;i++)
+			for(int i=0;i<newRidgeStruct.ridgeCatLine.anchorInnerPointlist.Count;i++)
 			{
 				ShowPos(newRidgeStruct.ridgeCatLine.anchorInnerPointlist[i], newRidgeStruct.body,Color.green);
-			}*/
+			}
 		
 			return newRidgeStruct;
 
@@ -536,11 +564,11 @@ public class RoofController : Singleton<RoofController>
 			GameObject midControlPoint = CreateControlPoint(newRidgeStruct.body, midControlPointPos, EaveControlPointType.MidControlPoint.ToString());
 			newRidgeStruct.controlPointDictionaryList.Add(EaveControlPointType.MidControlPoint.ToString(), midControlPoint);
 			//MidRightControlPoint
-			Vector3 midRControlPointPos = startControlPointPos - (startControlPointPos - endControlPointPos).normalized * eave2eaveColumnOffset + eaveCurveHeightOffset * Vector3.up;
+			Vector3 midRControlPointPos = startControlPointPos - (startControlPointPos - endControlPointPos).normalized * eave2FlyEaveOffset + eaveCurveHeightOffset * Vector3.up;
 			GameObject midRControlPoint = CreateControlPoint(newRidgeStruct.body, midRControlPointPos, EaveControlPointType.MidRControlPoint.ToString());
 			newRidgeStruct.controlPointDictionaryList.Add(EaveControlPointType.MidRControlPoint.ToString(), midRControlPoint);
 			//MidLeftControlPoint
-			Vector3 midLControlPointPos = endControlPointPos + (startControlPointPos - endControlPointPos).normalized * eave2eaveColumnOffset + eaveCurveHeightOffset * Vector3.up;
+			Vector3 midLControlPointPos = endControlPointPos + (startControlPointPos - endControlPointPos).normalized * eave2FlyEaveOffset + eaveCurveHeightOffset * Vector3.up;
 			GameObject midLControlPoint = CreateControlPoint(newRidgeStruct.body, midLControlPointPos, EaveControlPointType.MidLControlPoint.ToString());
 			newRidgeStruct.controlPointDictionaryList.Add(EaveControlPointType.MidLControlPoint.ToString(), midLControlPoint);
 
@@ -663,10 +691,16 @@ public class RoofController : Singleton<RoofController>
 			Vector3 roofSurfaceTileRidgeUpPointPos = Vector3.zero;
 			Vector3 roofSurfaceTileRidgeDownPointPos = Vector3.zero;
 
+			Vector3 lastRoofSurfaceTileRidgeUpPointPos = Vector3.zero;
 			//FindPointOnMainRidgeCloser2Plane
-			int starIndex = FindNearestPointInList2Plane(verticalCutPlane, RightMainRidgeStruct.ridgeCatLine.anchorInnerPointlist, roofSurface2MainRidgeStartingIndex_R, RightMainRidgeStruct.ridgeCatLine.anchorInnerPointlist.Count - 1);
+			roofSurface2MainRidgeStartingIndex_R = FindNearestPointInList2Plane(verticalCutPlane, RightMainRidgeStruct.ridgeCatLine.anchorInnerPointlist, roofSurface2MainRidgeStartingIndex_R, RightMainRidgeStruct.ridgeCatLine.anchorInnerPointlist.Count - 1);
 
-			roofSurfaceTileRidgeUpPointPos = RightMainRidgeStruct.ridgeCatLine.anchorInnerPointlist[starIndex];
+
+	
+			
+			roofSurfaceTileRidgeUpPointPos = RightMainRidgeStruct.ridgeCatLine.anchorInnerPointlist[roofSurface2MainRidgeStartingIndex_R];
+
+		
 
 			//FindPointOnEaveCloser2Plane
 
@@ -688,8 +722,10 @@ public class RoofController : Singleton<RoofController>
 			roofSurfaceStartingIndexCutPlane.SetNormalAndPosition(roofSurfaceCutPlaneNormal, roofSurfaceTileRidgeUpPointPos);
 
 			roofSurfaceTileRidgeStartingIndex = FindNearestPointInList2Plane(roofSurfaceStartingIndexCutPlane, newMidRidgeStruct.ridgeCatLine.anchorInnerPointlist, roofSurfaceTileRidgeStartingIndex, newMidRidgeStruct.ridgeCatLine.anchorInnerPointlist.Count - 1);
-
+			//修正
+			
 			float ratioA = ((float)(n - 1) / ((roofSurfaceTileRidgeMaxCount_Ver - 2)));
+			
 			//Copy
 			for (int m = roofSurfaceTileRidgeStartingIndex; m < newMidRidgeStruct.ridgeCatLine.anchorInnerPointlist.Count; m++)
 			{
@@ -723,6 +759,8 @@ public class RoofController : Singleton<RoofController>
 			CreateRoofSurfaceTile(roofSurfaceModelStruct, newRightRidgeStruct.body, newRightRidgeStruct, lastRightRidgeStruct, newMidRidgeStruct, eaveStruct, 1);
 			CreateRoofSurfaceTile(roofSurfaceModelStruct, newLeftRidgeStruct.body, newLeftRidgeStruct, lastLeftRidgeStruct, newMidRidgeStruct, eaveStruct, -1);
 
+
+			lastRoofSurfaceTileRidgeUpPointPos = roofSurfaceTileRidgeUpPointPos;
 
 			lastRightRidgeStruct = newRightRidgeStruct;
 			lastLeftRidgeStruct = newLeftRidgeStruct;

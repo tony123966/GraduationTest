@@ -10,7 +10,7 @@ public class PlatformController : Singleton<PlatformController>
 
 	//Platform**************************************************************************
 	public enum PlatformType { };
-	public float platformFrontWidth = 40;
+	public float platformFrontWidth = 20;
 	public float platformFrontWidthOffset2Body;
 
 	public float platformHeight;

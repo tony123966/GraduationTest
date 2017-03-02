@@ -32,7 +32,7 @@ public class CatLine : MonoBehaviour
 		List<Vector3> newList = new List<Vector3>();
 		newList.Add(list[startIndex]);
 		int dir=((endIndex - startIndex) > 0 ? 1 : -1);
-		for (int i = startIndex; ((endIndex - startIndex) > 0 ? (i < endIndex - dir) : (i > endIndex - dir)); i += dir)
+		for (int i = startIndex; ((endIndex - startIndex) > 0 ? (i < (endIndex)) : (i > (endIndex))); i += dir)
 		{
 			dis += Vector3.Distance(list[i], list[i +dir]);
 			if (dis >= anchorDis)

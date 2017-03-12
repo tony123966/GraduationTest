@@ -46,6 +46,7 @@
   </ItemGroup>
   <ItemGroup>
      <Compile Include="Assets\Scripts\BodyController.cs" />
+     <Compile Include="Assets\Scripts\Building.cs" />
      <Compile Include="Assets\Scripts\CatLine.cs" />
      <Compile Include="Assets\Scripts\CylinderMesh.cs" />
      <Compile Include="Assets\Scripts\MainController.cs" />

@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+
 public class MainController : Singleton<MainController>
 {
 	public Vector3 buildingCenter = Vector3.zero;
@@ -17,7 +18,7 @@ public class MainController : Singleton<MainController>
 	{
 		InitFunction();
 	}
-	private void InitFunction()
+	public void InitFunction()
 	{
 
 		building = new GameObject("Building");
@@ -27,4 +28,5 @@ public class MainController : Singleton<MainController>
 		BodyController.Instance.InitFunction();
 		RoofController.Instance.InitFunction();
 	}
+	
 }

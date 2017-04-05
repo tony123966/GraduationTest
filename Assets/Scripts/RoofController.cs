@@ -157,19 +157,6 @@ struct RoofSurfaceStruct//屋面
 	public List<RidgeStruct> leftRoofSurfaceTileRidgeList;
 	public RidgeStruct midRoofSurfaceTileRidge;
 }
-struct ModelStruct//模型旋轉、縮放
-{
-	public GameObject model;
-	public Vector3 rotation;
-	public Vector3 scale;
-
-	public ModelStruct(GameObject model, Vector3 rotation, Vector3 scale)
-	{
-		this.model = model;
-		this.rotation = rotation;
-		this.scale = scale;
-	}
-}
 struct MainRidgeModelStruct//主脊模型
 {
 	public ModelStruct mainRidgeTileModelStruct;
@@ -247,7 +234,7 @@ public class RoofController : Singleton<RoofController>
 	public void InitFunction()
 	{
 		//初始值******************************************************************************
-		allJijaHeight = BodyController.Instance.eaveColumnHeight * 0.7f;
+		allJijaHeight = BodyController.Instance.eaveColumnHeight * 1.2f;
 		eave2eaveColumnOffset = BodyController.Instance.eaveColumnHeight * 0.4f;
 		eave2FlyEaveOffset = BodyController.Instance.eaveColumnHeight*0.4f;
 		beamsHeight = BodyController.Instance.eaveColumnHeight * 0.1f;
@@ -256,13 +243,13 @@ public class RoofController : Singleton<RoofController>
 		Lu_DingMainRidgeOffset = BodyController.Instance.eaveColumnHeight * 0.5f;
 
 
-		roundTileModelStruct = new ModelStruct(roundTileModel, roundTileModelRotation, roundTileModelScale);
-		flatTileModelStruct = new ModelStruct(flatTileModel, flatTileModelRotation, flatTileModelScale);
-		eaveTileModelStruct = new ModelStruct(eaveTileModel, eaveTileModelRotation, eaveTileModelScale);
+		roundTileModelStruct = new ModelStruct(roundTileModel, roundTileModelRotation, roundTileModelScale, Vector3.forward);
+		flatTileModelStruct = new ModelStruct(flatTileModel, flatTileModelRotation, flatTileModelScale, Vector3.forward);
+		eaveTileModelStruct = new ModelStruct(eaveTileModel, eaveTileModelRotation, eaveTileModelScale, Vector3.forward);
 		roofSurfaceModelStruct = new RoofSurfaceModelStruct(roundTileModelStruct, flatTileModelStruct, eaveTileModelStruct);
 
 
-		mainRidgeTileModelStruct = new ModelStruct(mainRidgeTileModel, mainRidgeTileModelRotation, mainRidgeTileModelScale);
+		mainRidgeTileModelStruct = new ModelStruct(mainRidgeTileModel, mainRidgeTileModelRotation, mainRidgeTileModelScale, Vector3.forward);
 		mainRidgeModelStruct = new MainRidgeModelStruct(mainRidgeTileModelStruct);
 		//************************************************************************************
 		roof = new GameObject("Roof");
@@ -689,7 +676,6 @@ public class RoofController : Singleton<RoofController>
 	}
 	RidgeStruct CreateMainRidgeStruct(int eaveColumnListIndex, Vector3 topControlPointPos)
 	{
-
 		RidgeStruct newRidgeStruct = CreateRidgeSturct("MainRidge", roof);
 
 		//TopControlPoint
@@ -1427,19 +1413,22 @@ public class RoofController : Singleton<RoofController>
 		RoofSurfaceStruct roofSurfaceStructList;
 		RoofSurfaceStruct roofSurfaceStructListA;
 		Vector3 offsetVector;
+
+		int ColumnIndex_Zero = (BodyController.Instance.eaveColumnbayNumber>0)?0 * BodyController.Instance.eaveColumnbayNumber:0;
+		int ColumnIndex_One = (BodyController.Instance.eaveColumnbayNumber > 0) ? 1 * BodyController.Instance.eaveColumnbayNumber : 1;
+		int ColumnIndex_Two = (BodyController.Instance.eaveColumnbayNumber > 0) ? 2 * BodyController.Instance.eaveColumnbayNumber : 2;
 		switch (roofType)
 		{
 			//攢尖頂
 			case RoofType.Zan_Jian_Ding:
 				#region  Zan_Jian_Ding
 
-
 				switch (MainController.Instance.formFactorType)
 				{
 					case MainController.FormFactorType.RegularRing:
 						//主脊-MainRidge輔助線 
-						RightMainRidgeStruct = CreateMainRidgeStruct(0, roofTopCenter);
-						LeftMainRidgeStruct = CreateMainRidgeStruct(1, roofTopCenter);
+						RightMainRidgeStruct = CreateMainRidgeStruct(ColumnIndex_Zero, roofTopCenter);
+						LeftMainRidgeStruct = CreateMainRidgeStruct(ColumnIndex_One, roofTopCenter);
 
 						//Eave輔助線
 						eaveStruct = CreateEaveStruct(RightMainRidgeStruct, LeftMainRidgeStruct);//檐出
@@ -1456,8 +1445,8 @@ public class RoofController : Singleton<RoofController>
 						break;
 					case MainController.FormFactorType.FreeQuad:
 						//主脊-MainRidge輔助線 
-						RightMainRidgeStruct = CreateMainRidgeStruct(0, roofTopCenter);
-						LeftMainRidgeStruct = CreateMainRidgeStruct(1, roofTopCenter);
+						RightMainRidgeStruct = CreateMainRidgeStruct(ColumnIndex_Zero, roofTopCenter);
+						LeftMainRidgeStruct = CreateMainRidgeStruct(ColumnIndex_One, roofTopCenter);
 
 						//Eave輔助線
 						eaveStruct = CreateEaveStruct(RightMainRidgeStruct, LeftMainRidgeStruct);//檐出
@@ -1468,7 +1457,7 @@ public class RoofController : Singleton<RoofController>
 
 						//主脊-MainRidge輔助線 
 						RightMainRidgeStructA = LeftMainRidgeStruct;
-						LeftMainRidgeStructA = CreateMainRidgeStruct(2, roofTopCenter);
+						LeftMainRidgeStructA = CreateMainRidgeStruct(ColumnIndex_Two, roofTopCenter);
 						//Eave輔助線
 						eaveStructA = CreateEaveStruct(RightMainRidgeStructA, LeftMainRidgeStructA);//檐出
 
@@ -1489,13 +1478,13 @@ public class RoofController : Singleton<RoofController>
 
 				MainController.Instance.sides = MainController.FormFactorSideType.FourSide;
 
-				offsetVector = (BodyController.Instance.eaveColumnList[0].topPos - BodyController.Instance.eaveColumnList[1].topPos).normalized * Wu_Dian_DingMainRidgeWidth;
+				offsetVector = (BodyController.Instance.eaveColumnList[ColumnIndex_Zero].topPos - BodyController.Instance.eaveColumnList[1].topPos).normalized * Wu_Dian_DingMainRidgeWidth;
 				Vector3 rightRoofTopCenter = roofTopCenter + offsetVector;
 				Vector3 leftRoofTopCenter = roofTopCenter - offsetVector;
 
 				//主脊-MainRidge輔助線 
-				RightMainRidgeStruct = CreateMainRidgeStruct(0, rightRoofTopCenter);
-				LeftMainRidgeStruct = CreateMainRidgeStruct(1, leftRoofTopCenter);
+				RightMainRidgeStruct = CreateMainRidgeStruct(ColumnIndex_Zero, rightRoofTopCenter);
+				LeftMainRidgeStruct = CreateMainRidgeStruct(ColumnIndex_One, leftRoofTopCenter);
 				//Eave輔助線
 				eaveStruct = CreateEaveStruct(RightMainRidgeStruct, LeftMainRidgeStruct);//檐出
 				//RoofSurface
@@ -1503,8 +1492,8 @@ public class RoofController : Singleton<RoofController>
 				//CreateMainRidgeTile(mainRidgeModelStruct, RightMainRidgeStruct, roofSurfaceStructList, eaveStruct, RightMainRidgeStruct.body);
 
 
-				Vector2 v1 = new Vector2(rightRoofTopCenter.x - BodyController.Instance.eaveColumnList[0].topPos.x, rightRoofTopCenter.z - BodyController.Instance.eaveColumnList[0].topPos.z);
-				Vector2 v2 = new Vector2(leftRoofTopCenter.x - BodyController.Instance.eaveColumnList[1].topPos.x, leftRoofTopCenter.z - BodyController.Instance.eaveColumnList[1].topPos.z);
+				Vector2 v1 = new Vector2(rightRoofTopCenter.x - BodyController.Instance.eaveColumnList[ColumnIndex_Zero].topPos.x, rightRoofTopCenter.z - BodyController.Instance.eaveColumnList[ColumnIndex_Zero].topPos.z);
+				Vector2 v2 = new Vector2(leftRoofTopCenter.x - BodyController.Instance.eaveColumnList[ColumnIndex_One].topPos.x, leftRoofTopCenter.z - BodyController.Instance.eaveColumnList[ColumnIndex_One].topPos.z);
 
 				float angle = Vector2.Angle(v1, v2);
 
@@ -1514,7 +1503,7 @@ public class RoofController : Singleton<RoofController>
 
 				//主脊-MainRidge輔助線 
 				RightMainRidgeStructA = LeftMainRidgeStruct;
-				LeftMainRidgeStructA = CreateMainRidgeStruct(2, leftRoofTopCenter);
+				LeftMainRidgeStructA = CreateMainRidgeStruct(ColumnIndex_Two, leftRoofTopCenter);
 				//Eave輔助線
 				eaveStructA = CreateEaveStruct(RightMainRidgeStructA, LeftMainRidgeStructA);//檐出
 
@@ -1537,11 +1526,11 @@ public class RoofController : Singleton<RoofController>
 				MainController.Instance.sides = MainController.FormFactorSideType.FourSide;
 
 				//主脊-MainRidge輔助線 
-				offsetVector = (new Vector3(BodyController.Instance.eaveColumnList[0].topPos.x - roofTopCenter.x, 0, BodyController.Instance.eaveColumnList[0].topPos.z - roofTopCenter.z)).normalized * Lu_DingMainRidgeOffset;
-				RightMainRidgeStruct = CreateMainRidgeStruct(0, roofTopCenter + offsetVector);
+				offsetVector = (new Vector3(BodyController.Instance.eaveColumnList[ColumnIndex_Zero].topPos.x - roofTopCenter.x, 0, BodyController.Instance.eaveColumnList[ColumnIndex_Zero].topPos.z - roofTopCenter.z)).normalized * Lu_DingMainRidgeOffset;
+				RightMainRidgeStruct = CreateMainRidgeStruct(ColumnIndex_Zero, roofTopCenter + offsetVector);
 
-				offsetVector = (new Vector3(BodyController.Instance.eaveColumnList[1].topPos.x - roofTopCenter.x, 0, BodyController.Instance.eaveColumnList[1].topPos.z - roofTopCenter.z)).normalized * Lu_DingMainRidgeOffset;
-				LeftMainRidgeStruct = CreateMainRidgeStruct(1, roofTopCenter + offsetVector);
+				offsetVector = (new Vector3(BodyController.Instance.eaveColumnList[ColumnIndex_One].topPos.x - roofTopCenter.x, 0, BodyController.Instance.eaveColumnList[ColumnIndex_One].topPos.z - roofTopCenter.z)).normalized * Lu_DingMainRidgeOffset;
+				LeftMainRidgeStruct = CreateMainRidgeStruct(ColumnIndex_One, roofTopCenter + offsetVector);
 				//Eave輔助線
 				eaveStruct = CreateEaveStruct(RightMainRidgeStruct, LeftMainRidgeStruct);//檐出
 
@@ -1550,8 +1539,8 @@ public class RoofController : Singleton<RoofController>
 
 				//主脊-MainRidge輔助線 
 				RightMainRidgeStructA = LeftMainRidgeStruct;
-				offsetVector = (new Vector3(BodyController.Instance.eaveColumnList[2].topPos.x - roofTopCenter.x, 0, BodyController.Instance.eaveColumnList[2].topPos.z - roofTopCenter.z)).normalized * Lu_DingMainRidgeOffset;
-				LeftMainRidgeStructA = CreateMainRidgeStruct(2, roofTopCenter + offsetVector);
+				offsetVector = (new Vector3(BodyController.Instance.eaveColumnList[ColumnIndex_Two].topPos.x - roofTopCenter.x, 0, BodyController.Instance.eaveColumnList[ColumnIndex_Two].topPos.z - roofTopCenter.z)).normalized * Lu_DingMainRidgeOffset;
+				LeftMainRidgeStructA = CreateMainRidgeStruct(ColumnIndex_Two, roofTopCenter + offsetVector);
 				//Eave輔助線
 				eaveStructA = CreateEaveStruct(RightMainRidgeStructA, LeftMainRidgeStructA);//檐出
 

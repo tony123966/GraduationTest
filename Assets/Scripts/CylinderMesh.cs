@@ -6,6 +6,7 @@ public class CylinderMesh : MonoBehaviour
 	MeshFilter meshFilter;
 	MeshRenderer meshRenderer;
 
+	public Vector3 pos;
 	public Vector3 topPos;
 	public Vector3 bottomPos;
 
@@ -28,7 +29,7 @@ public class CylinderMesh : MonoBehaviour
 			meshRenderer.material.color=Color.red;
 		}
 	}
-	public void CylinderInitSetting(Vector3 topPos, Vector3 bottomPos, float topRadius, float bottomRadius, int sections = 10) 
+	public void CylinderInitSetting(Vector3 pos,Vector3 topPos, Vector3 bottomPos, float topRadius, float bottomRadius, int sections = 10) 
 	{
 		if (bottomPos.y <= topPos.y) 
 		{
@@ -44,6 +45,7 @@ public class CylinderMesh : MonoBehaviour
 			this.bottomRadius = topRadius;
 			this.topRadius = bottomRadius;
 		}
+		this.pos = pos;
 		this.sections = sections;
 	}
 /*

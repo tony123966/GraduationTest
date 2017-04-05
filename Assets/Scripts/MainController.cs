@@ -1,6 +1,21 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+struct ModelStruct//模型旋轉、縮放
+{
+	public GameObject model;
+	public Vector3 rotation;
+	public Vector3 scale;
+	public Vector3 originDir;
+
+	public ModelStruct(GameObject model, Vector3 rotation, Vector3 scale, Vector3 originDir)
+	{
+		this.model = model;
+		this.rotation = rotation;
+		this.scale = scale;
+		this.originDir = originDir;
+	}
+}
 public class MainController : Singleton<MainController>
 {
 	public Vector3 buildingCenter = Vector3.zero;
@@ -389,34 +404,34 @@ public class MainController : Singleton<MainController>
 
 		return controlPointPosList;
 	}
-	public void CreateTorusMesh(Vector3 centerPos, float width, float height, float length, float innerWidth, float innerHeight, float innerLength, MeshFilter meshFilter)
+	public void CreateTorusMesh(Vector3 centerPos, float width, float height, float length, float innerWidthRatio, float innerHeightDownRatio, float innerHeightTopRatio, float innerLengthRatio, float rotateAngle, MeshFilter meshFilter)
 	{
 		int nbSides = 4;
 
 		Mesh mesh = new Mesh();
 		meshFilter.mesh = mesh;
 		mesh.Clear();
-		Vector3 p0 = new Vector3(width * .5f, -height * .5f, length * .5f) + centerPos;
-		Vector3 p1 = new Vector3(width * .5f, height * .5f, length * .5f) + centerPos;
-		Vector3 p2 = new Vector3(-width * .5f, height * .5f, length * .5f) + centerPos;
-		Vector3 p3 = new Vector3(-width * .5f, -height * .5f, length * .5f) + centerPos;
+		Vector3 p0 = Quaternion.AngleAxis(rotateAngle, Vector3.up) * new Vector3(width * .5f, -height * .5f, length * .5f) + centerPos;
+		Vector3 p1 = Quaternion.AngleAxis(rotateAngle, Vector3.up) * new Vector3(width * .5f, height * .5f, length * .5f) + centerPos;
+		Vector3 p2 = Quaternion.AngleAxis(rotateAngle, Vector3.up) * new Vector3(-width * .5f, height * .5f, length * .5f) + centerPos;
+		Vector3 p3 = Quaternion.AngleAxis(rotateAngle, Vector3.up) * new Vector3(-width * .5f, -height * .5f, length * .5f) + centerPos;
 
-		Vector3 p4 = new Vector3(width * .5f, -height * .5f, -length * .5f) + centerPos;
-		Vector3 p5 = new Vector3(width * .5f, height * .5f, -length * .5f) + centerPos;
-		Vector3 p6 = new Vector3(-width * .5f, height * .5f, -length * .5f) + centerPos;
-		Vector3 p7 = new Vector3(-width * .5f, -height * .5f, -length * .5f) + centerPos;
+		Vector3 p4 = Quaternion.AngleAxis(rotateAngle, Vector3.up) * new Vector3(width * .5f, -height * .5f, -length * .5f) + centerPos;
+		Vector3 p5 = Quaternion.AngleAxis(rotateAngle, Vector3.up) * new Vector3(width * .5f, height * .5f, -length * .5f) + centerPos;
+		Vector3 p6 = Quaternion.AngleAxis(rotateAngle, Vector3.up) * new Vector3(-width * .5f, height * .5f, -length * .5f) + centerPos;
+		Vector3 p7 = Quaternion.AngleAxis(rotateAngle, Vector3.up) * new Vector3(-width * .5f, -height * .5f, -length * .5f) + centerPos;
 
-		Vector3 p8 = new Vector3(innerWidth * .5f, -innerHeight * .5f, innerLength * .5f) + centerPos;
-		Vector3 p9 = new Vector3(innerWidth * .5f, innerHeight * .5f, innerLength * .5f) + centerPos;
-		Vector3 p10 = new Vector3(-innerWidth * .5f, innerHeight * .5f, innerLength * .5f) + centerPos;
-		Vector3 p11 = new Vector3(-innerWidth * .5f, -innerHeight * .5f, innerLength * .5f) + centerPos;
+		Vector3 p8 = Quaternion.AngleAxis(rotateAngle, Vector3.up) * new Vector3(innerWidthRatio * width * .5f, -(.5f - innerHeightDownRatio) * height, innerLengthRatio * length * .5f) + centerPos;
+		Vector3 p9 = Quaternion.AngleAxis(rotateAngle, Vector3.up) * new Vector3(innerWidthRatio * width * .5f, (innerHeightTopRatio - .5f) * height, innerLengthRatio * length * .5f) + centerPos;
+		Vector3 p10 = Quaternion.AngleAxis(rotateAngle, Vector3.up) * new Vector3(-innerWidthRatio * width * .5f, (innerHeightTopRatio - .5f) * height, innerLengthRatio * length * .5f) + centerPos;
+		Vector3 p11 = Quaternion.AngleAxis(rotateAngle, Vector3.up) * new Vector3(-innerWidthRatio * width * .5f, -(.5f - innerHeightDownRatio) * height, innerLengthRatio * length * .5f) + centerPos;
 
-		Vector3 p12 = new Vector3(innerWidth * .5f, -innerHeight * .5f, -innerLength * .5f) + centerPos;
-		Vector3 p13 = new Vector3(innerWidth * .5f, innerHeight * .5f, -innerLength * .5f) + centerPos;
-		Vector3 p14 = new Vector3(-innerWidth * .5f, innerHeight * .5f, -innerLength * .5f) + centerPos;
-		Vector3 p15 = new Vector3(-innerWidth * .5f, -innerHeight * .5f, -innerLength * .5f) + centerPos;
+		Vector3 p12 = Quaternion.AngleAxis(rotateAngle, Vector3.up) * new Vector3(innerWidthRatio * width * .5f, -(.5f - innerHeightDownRatio) * height, -innerLengthRatio * length * .5f) + centerPos;
+		Vector3 p13 = Quaternion.AngleAxis(rotateAngle, Vector3.up) * new Vector3(innerWidthRatio * width * .5f, (innerHeightTopRatio - .5f) * height, -innerLengthRatio * length * .5f) + centerPos;
+		Vector3 p14 = Quaternion.AngleAxis(rotateAngle, Vector3.up) * new Vector3(-innerWidthRatio * width * .5f, (innerHeightTopRatio - .5f) * height, -innerLengthRatio * length * .5f) + centerPos;
+		Vector3 p15 = Quaternion.AngleAxis(rotateAngle, Vector3.up) * new Vector3(-innerWidthRatio * width * .5f, -(.5f - innerHeightDownRatio) * height, -innerLengthRatio * length * .5f) + centerPos;
 		// Outter shell is at radius1 + radius2 / 2, inner shell at radius1 - radius2 / 2
-		
+
 		#region Vertices
 
 		// bottom + top + sides
@@ -442,13 +457,19 @@ public class MainController : Singleton<MainController>
  			// innerRight
 			p15, p14, p10, p11,
 			// Front
-			p0, p1, p2, p3,
-			// innerFront
-			p8, p9, p10, p11,
+			p0, p1, p9, p8,
+			p1, p2, p10, p9,
+			p2, p3, p11, p10,
+			p3, p0, p8, p11,
 			// Back
-			p7, p6, p5, p4,
+			p7, p6, p14, p15,
+			p6, p5, p13, p14,
+			p5, p4, p12, p13,
+			p4, p7, p15, p12,
+			// Back
+			//p7, p6, p5, p4,
  			// innerBack
-			p15, p14, p13, p12
+			//p15, p14, p13, p12
 
 		};
 		#endregion
@@ -457,49 +478,53 @@ public class MainController : Singleton<MainController>
 
 		// bottom + top + sides
 		Vector3[] normales = new Vector3[vertices.Length];
-		int vert=0;
+		int vert = 0;
 		// Bottom cap
 		for (int i = 0; i < nbSides; i++)
 		{
 			normales[i + vert] = Vector3.down;
 			normales[i + nbSides + vert] = -Vector3.down;
 		}
-		vert += nbSides*2;
+		vert += nbSides * 2;
 		// Top cap
 		for (int i = 0; i < nbSides; i++)
 		{
-			normales[i+vert] = Vector3.up;
-			normales[i+vert + nbSides] = -Vector3.up;
+			normales[i + vert] = Vector3.up;
+			normales[i + vert + nbSides] = -Vector3.up;
 		}
 		vert += nbSides * 2;
 		// Left cap
 		for (int i = 0; i < nbSides; i++)
 		{
-			normales[i+vert] = Vector3.right;
-			normales[i+vert + nbSides] = -Vector3.right;
+			normales[i + vert] = Vector3.right;
+			normales[i + vert + nbSides] = -Vector3.right;
 		}
 		vert += nbSides * 2;
 		// Right cap
 		for (int i = 0; i < nbSides; i++)
 		{
-			normales[i+vert] = Vector3.left;
-			normales[i+vert + nbSides] = -Vector3.left;
+			normales[i + vert] = Vector3.left;
+			normales[i + vert + nbSides] = -Vector3.left;
 		}
 		vert += nbSides * 2;
 		// Front cap
-		for (int i = 0; i < nbSides; i++)
-		{
-			normales[i+vert] = Vector3.forward;
-			normales[i+vert + nbSides] = Vector3.forward;
+		for(int j=0;j<4;j++){
+			Vector3 nor=Vector3.Cross(vertices[nbSides * j+1 + vert]-vertices[nbSides * j + vert],vertices[nbSides * j+2 + vert]-vertices[nbSides * j + vert]).normalized;
+			for (int i = 0; i < nbSides; i++)
+			{
+				normales[i + nbSides * j + vert] = -nor;
+			}
 		}
-		vert += nbSides * 2;
+		vert += nbSides *4;
 		// Back cap
-		for (int i = 0; i < nbSides; i++)
+		for (int j = 0; j < 4; j++)
 		{
-			normales[i+vert] = -Vector3.forward;
-			normales[i+vert + nbSides] = -Vector3.forward;
+			Vector3 nor = Vector3.Cross(vertices[nbSides * j + 1 + vert] - vertices[nbSides * j + vert], vertices[nbSides * j + 2 + vert] - vertices[nbSides * j + vert]).normalized;
+			for (int i = 0; i < nbSides; i++)
+			{
+				normales[i + nbSides * j + vert] = nor;
+			}
 		}
-
 		#endregion
 
 		#region UVs
@@ -509,30 +534,18 @@ public class MainController : Singleton<MainController>
 		#endregion
 
 		#region Triangles
-		vert=0;
-		int[] triangles = new int[nbSides * 6 * 2 + nbSides*6*2];
-		for (int j = 0; j < 8; j++)
+		vert = 0;
+		int[] triangles = new int[nbSides * 6 * 2 + nbSides * 6 * 2];
+		for (int j = 0; j < 16; j++)
 		{
 			for (int i = 0; i < 2; i++)
 			{
-				triangles[vert++] = j*4;
+				triangles[vert++] = j * 4;
 				triangles[vert++] = i + 1 + j * 4;
 				triangles[vert++] = i + 2 + j * 4;
 			}
 		}
-		int nCount = nbSides*2*4;
-		for(int j=0;j<2;j++){
-			for (int i = 0; i < nbSides; i++)
-			{
-				triangles[vert++] = i + nCount + j * nbSides * 2;
-				triangles[vert++] = (i + 1) % nbSides + nCount + j * nbSides * 2;
-				triangles[vert++] = i + nCount + nbSides + j * nbSides * 2;
-				triangles[vert++] = (i + 1) % nbSides + nCount + j * nbSides * 2;
-				triangles[vert++] = (i + 1) % nbSides + nCount + nbSides + j * nbSides * 2;
-				triangles[vert++] = i + nCount + nbSides + j * nbSides * 2;
-			}
-		}
-	
+
 		#endregion
 
 		mesh.vertices = vertices;

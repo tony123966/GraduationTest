@@ -243,13 +243,13 @@ public class RoofController : Singleton<RoofController>
 		Lu_DingMainRidgeOffset = BodyController.Instance.eaveColumnHeight * 0.5f;
 
 
-		roundTileModelStruct = new ModelStruct(roundTileModel, roundTileModelRotation, roundTileModelScale, Vector3.forward);
-		flatTileModelStruct = new ModelStruct(flatTileModel, flatTileModelRotation, flatTileModelScale, Vector3.forward);
-		eaveTileModelStruct = new ModelStruct(eaveTileModel, eaveTileModelRotation, eaveTileModelScale, Vector3.forward);
+		roundTileModelStruct = new ModelStruct(roundTileModel, roundTileModelRotation, roundTileModelScale);
+		flatTileModelStruct = new ModelStruct(flatTileModel, flatTileModelRotation, flatTileModelScale);
+		eaveTileModelStruct = new ModelStruct(eaveTileModel, eaveTileModelRotation, eaveTileModelScale);
 		roofSurfaceModelStruct = new RoofSurfaceModelStruct(roundTileModelStruct, flatTileModelStruct, eaveTileModelStruct);
 
 
-		mainRidgeTileModelStruct = new ModelStruct(mainRidgeTileModel, mainRidgeTileModelRotation, mainRidgeTileModelScale, Vector3.forward);
+		mainRidgeTileModelStruct = new ModelStruct(mainRidgeTileModel, mainRidgeTileModelRotation, mainRidgeTileModelScale);
 		mainRidgeModelStruct = new MainRidgeModelStruct(mainRidgeTileModelStruct);
 		//************************************************************************************
 		roof = new GameObject("Roof");
@@ -1414,7 +1414,7 @@ public class RoofController : Singleton<RoofController>
 		RoofSurfaceStruct roofSurfaceStructListA;
 		Vector3 offsetVector;
 
-		int ColumnIndex_Zero = (BodyController.Instance.eaveColumnbayNumber>0)?0 * BodyController.Instance.eaveColumnbayNumber:0;
+		int ColumnIndex_Zero = (BodyController.Instance.eaveColumnbayNumber > 0) ? 0 * BodyController.Instance.eaveColumnbayNumber : 0;
 		int ColumnIndex_One = (BodyController.Instance.eaveColumnbayNumber > 0) ? 1 * BodyController.Instance.eaveColumnbayNumber : 1;
 		int ColumnIndex_Two = (BodyController.Instance.eaveColumnbayNumber > 0) ? 2 * BodyController.Instance.eaveColumnbayNumber : 2;
 		switch (roofType)

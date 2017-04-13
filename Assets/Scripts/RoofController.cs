@@ -575,18 +575,6 @@ public class RoofController : Singleton<RoofController>
 		obj.transform.localScale = Vector3.one * localScale;
 		obj.GetComponent<MeshRenderer>().material.color = color;
 	}
-	float DisPoint2Line(Vector3 rayOrigin, Vector3 rayDir, Vector3 point)
-	{
-		/*
-				rayDir = rayDir.normalized;
-				float distance = Vector3.Distance(rayOrigin, point);
-				float angle = Vector3.Angle(rayDir + rayOrigin, point - rayOrigin);
-				return (distance * Mathf.Sin(angle * Mathf.Deg2Rad));*/
-
-		rayDir = rayDir.normalized;
-		Ray ray = new Ray(rayOrigin, rayDir);
-		return Vector3.Cross(ray.direction, point - ray.origin).magnitude;
-	}
 	int FindNearestPointInList2Plane(Plane plane, List<Vector3> list, int startIndex, int endIndex,float threshold=0)
 	{
 		float pointMinDis2Plane = float.MaxValue;

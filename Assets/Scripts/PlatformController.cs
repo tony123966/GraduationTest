@@ -19,7 +19,7 @@ public class PlatformController : Singleton<PlatformController>
 	public List<Vector3> topPointPosList;
 	public List<Vector3> bottomPointPosList;
 
-
+	public bool isCurvePlatform=true;
 	//***********************************************************************
 
 	public void InitFunction()
@@ -47,13 +47,24 @@ public class PlatformController : Singleton<PlatformController>
 		{
 
 			case MainController.FormFactorType.RegularRing:
-
 				//初始值******************************************************************************
 				float platformRadius = (platformFrontWidth / 2.0f) / Mathf.Sin(2f * Mathf.PI / ((int)MainController.Instance.sides * 2));
-				//float platformRadius = platformFrontWidth;
-
 				//***********************************************************************************
-				controlPointPosList = MainController.Instance.CreateRegularRingMesh(pos, (int)MainController.Instance.sides, platformRadius, platformHeight, 360.0f / (int)MainController.Instance.sides/2, meshFilter);
+				if(isCurvePlatform)
+				{
+					Vector3 centerPos=Vector3.zero;
+					List<Vector3> localPosList=new List<Vector3>();
+					localPosList.Add(new Vector3(15,2,15));
+					localPosList.Add(new Vector3(16, 0, 16));
+					localPosList.Add(new Vector3(13, -3, 13));
+					localPosList.Add(new Vector3(18, -8, 18));
+					controlPointPosList = MainController.Instance.CreateRegularCurveRingMesh(centerPos, localPosList,Vector3.up, (int)MainController.Instance.sides,100, 360.0f / (int)MainController.Instance.sides / 2, meshFilter);
+				}
+				else 
+				{ 
+	
+					controlPointPosList = MainController.Instance.CreateRegularRingMesh(pos, (int)MainController.Instance.sides, platformRadius, platformHeight, 360.0f / (int)MainController.Instance.sides/2, meshFilter);
+				}
 				break;
 			case MainController.FormFactorType.FreeQuad:
 
@@ -65,7 +76,8 @@ public class PlatformController : Singleton<PlatformController>
 		for (int i = 0; i < (int)MainController.Instance.sides; i++)
 		{
 			bottomPointPosList.Add(controlPointPosList[i]);
-			topPointPosList.Add(controlPointPosList[i + (int)MainController.Instance.sides]);
+			//topPointPosList.Add(controlPointPosList[i + (int)MainController.Instance.sides]);
+			topPointPosList.Add(controlPointPosList[(controlPointPosList.Count - 1) - ((int)(MainController.Instance.sides-1))+i]);
 		}
 		topPointPosList.Reverse();
 		bottomPointPosList.Reverse();;

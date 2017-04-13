@@ -43,6 +43,34 @@ public class MainController : Singleton<MainController>
 		BodyController.Instance.InitFunction();
 		RoofController.Instance.InitFunction();
 	}
+
+	public float DistancePointLine(Vector3 point, Vector3 lineStart, Vector3 dir)
+	{
+		return Vector3.Magnitude(ProjectPointLine(point, lineStart, dir) - point);
+	}
+	public Vector3 ProjectPointLine(Vector3 point, Vector3 lineStart, Vector3 dir)
+	{
+		/*
+				Vector3 rhs = point - lineStart;
+				Vector3 vector2 = dir;
+				float magnitude = vector2.magnitude;
+				Vector3 lhs = vector2;
+				if (magnitude > 1E-06f)
+				{
+					lhs = (Vector3)(lhs / magnitude);
+				}
+				float num2 = Mathf.Clamp(Vector3.Dot(lhs, rhs), 0f, magnitude);
+				return (lineStart + ((Vector3)(lhs * num2)));*/
+		return Vector3.Project((point - lineStart), dir) + lineStart;
+	}
+	void ShowPos(Vector3 pos, GameObject parent, Color color, float localScale = 0.2f)
+	{
+		GameObject obj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+		obj.transform.position = pos;
+		obj.transform.parent = parent.transform;
+		obj.transform.localScale = Vector3.one * localScale;
+		obj.GetComponent<MeshRenderer>().material.color = color;
+	}
 	public List<Vector3> CreateCubeMesh(Vector3 centerPos, float width, float height, float length, float rotateAngle, MeshFilter meshFilter)
 	{
 		List<Vector3> controlPointPosList = new List<Vector3>();
@@ -210,15 +238,15 @@ public class MainController : Singleton<MainController>
 		float topRadius = radius;
 		float _2pi = Mathf.PI * 2f;
 
-		Vector3[] pList=new Vector3[nbSides * 2+2];
+		Vector3[] pList = new Vector3[nbSides * 2 + 2];
 
 		int vert = 0;
 		// PosList
-		pList[vert++]=Quaternion.AngleAxis(rotateAngle, Vector3.up) * bottomPos;
+		pList[vert++] = Quaternion.AngleAxis(rotateAngle, Vector3.up) * bottomPos;
 		for (int i = 0; i < nbSides; i++)
 		{
 			float rad = (float)i / nbSides * _2pi;
-			Vector3 pos=Quaternion.AngleAxis(rotateAngle, Vector3.up) * (new Vector3(Mathf.Cos(rad) * bottomRadius, 0f, Mathf.Sin(rad) * bottomRadius) + bottomPos);
+			Vector3 pos = Quaternion.AngleAxis(rotateAngle, Vector3.up) * (new Vector3(Mathf.Cos(rad) * bottomRadius, 0f, Mathf.Sin(rad) * bottomRadius) + bottomPos);
 			pList[vert++] = pos;
 			controlPointPosList.Add(pos);
 		}
@@ -226,38 +254,38 @@ public class MainController : Singleton<MainController>
 		for (int i = 0; i < nbSides; i++)
 		{
 			float rad = (float)i / nbSides * _2pi;
-			Vector3 pos=Quaternion.AngleAxis(rotateAngle, Vector3.up) * (new Vector3(Mathf.Cos(rad) * topRadius, 0f, Mathf.Sin(rad) * topRadius) + topPos);
+			Vector3 pos = Quaternion.AngleAxis(rotateAngle, Vector3.up) * (new Vector3(Mathf.Cos(rad) * topRadius, 0f, Mathf.Sin(rad) * topRadius) + topPos);
 			pList[vert++] = pos;
 			controlPointPosList.Add(pos);
 		}
 
 		#region Vertices
-		Vector3[] vertices = new Vector3[3 * nbSides * 2 + nbSides*6];
+		Vector3[] vertices = new Vector3[3 * nbSides * 2 + nbSides * 6];
 		vert = 0;
 
 		// Bottom cap
 		for (int i = 0; i < nbSides; i++)
 		{
 			vertices[vert++] = pList[0];
-			vertices[vert++] = pList[i+1];
+			vertices[vert++] = pList[i + 1];
 			vertices[vert++] = pList[(i + 1) % nbSides + 1];
 		}
 
 		// Top cap
 		for (int i = 0; i < nbSides; i++)
 		{
-			vertices[vert++] = pList[nbSides+1];
-			vertices[vert++] = pList[(i + 1) % nbSides + 1+(nbSides + 1)];
+			vertices[vert++] = pList[nbSides + 1];
+			vertices[vert++] = pList[(i + 1) % nbSides + 1 + (nbSides + 1)];
 			vertices[vert++] = pList[i + 1 + (nbSides + 1)];
 		}
 
 		// Sides
 		for (int i = 0; i < nbSides; i++)
 		{
-			vertices[vert++] = pList[i+1];
+			vertices[vert++] = pList[i + 1];
 			vertices[vert++] = pList[(i + 1) % nbSides + 1 + (nbSides + 1)];
 			vertices[vert++] = pList[(i + 1) % nbSides + 1];
-	
+
 
 			vertices[vert++] = pList[i + 1];
 			vertices[vert++] = pList[i + 1 + (nbSides + 1)];
@@ -272,12 +300,12 @@ public class MainController : Singleton<MainController>
 		Vector3[] normales = new Vector3[vertices.Length];
 		vert = 0;
 		// Bottom cap
-		for (int i = 0; i < nbSides*3; i++)
+		for (int i = 0; i < nbSides * 3; i++)
 		{
 			normales[vert++] = Vector3.down;
 		}
 		// Top cap
-		for (int i = 0; i < nbSides*3; i++)
+		for (int i = 0; i < nbSides * 3; i++)
 		{
 			normales[vert++] = Vector3.up;
 		}
@@ -288,10 +316,10 @@ public class MainController : Singleton<MainController>
 			{
 				normales[vert++] = nor;
 			}
-			
+
 		}
 		// Sides
-	
+
 		#endregion
 		#region UVs
 		//Vector2[] uvs = new Vector2[vertices.Length];
@@ -300,35 +328,36 @@ public class MainController : Singleton<MainController>
 		//int[] triangles = new int[3 * nbSides * 2 + 6 * nbSides];
 		int[] triangles = new int[vertices.Length];
 		vert = 0;
-		for(int i=0;i<triangles.Length;i++){
-		triangles[vert++] = i;
+		for (int i = 0; i < triangles.Length; i++)
+		{
+			triangles[vert++] = i;
 		}
 		// Bottom cap
-	/*	for (int i = 0; i < nbSides; i++)
-		{
-			triangles[vert++] = i * 3;
-			triangles[vert++] = i * 3 + 1;
-			triangles[vert++] = i * 3 + 2;
-		}
-		// Top cap
-		for (int i = 0; i < nbSides; i++)
-		{
-			triangles[vert++] = i * 3 + 3 * nbSides;
-			triangles[vert++] = i * 3 + 1 + 3 * nbSides;
-			triangles[vert++] = i * 3 + 2 + 3 * nbSides;
-		}
-		// Sides
+		/*	for (int i = 0; i < nbSides; i++)
+			{
+				triangles[vert++] = i * 3;
+				triangles[vert++] = i * 3 + 1;
+				triangles[vert++] = i * 3 + 2;
+			}
+			// Top cap
+			for (int i = 0; i < nbSides; i++)
+			{
+				triangles[vert++] = i * 3 + 3 * nbSides;
+				triangles[vert++] = i * 3 + 1 + 3 * nbSides;
+				triangles[vert++] = i * 3 + 2 + 3 * nbSides;
+			}
+			// Sides
 	
-		for (int i = 0; i < nbSides; i++)
-		{
-			triangles[vert++] = i *6 + 6 * nbSides;
-			triangles[vert++] = i * 6 + 1 + 6 * nbSides;
-			triangles[vert++] = i * 6 + 2 + 6 * nbSides;
+			for (int i = 0; i < nbSides; i++)
+			{
+				triangles[vert++] = i *6 + 6 * nbSides;
+				triangles[vert++] = i * 6 + 1 + 6 * nbSides;
+				triangles[vert++] = i * 6 + 2 + 6 * nbSides;
 
-			triangles[vert++] = i * 6 + 3 +6 * nbSides;
-			triangles[vert++] = i * 6 + 4 + 6 * nbSides;
-			triangles[vert++] = i * 6 + 5 + 6 * nbSides;
-		}*/
+				triangles[vert++] = i * 6 + 3 +6 * nbSides;
+				triangles[vert++] = i * 6 + 4 + 6 * nbSides;
+				triangles[vert++] = i * 6 + 5 + 6 * nbSides;
+			}*/
 		#endregion
 
 		mesh.vertices = vertices;
@@ -340,8 +369,8 @@ public class MainController : Singleton<MainController>
 		mesh.Optimize();
 
 		return controlPointPosList;
-		
-			#region Test
+
+		#region Test
 		/*	List<Vector3> controlPointPosList = new List<Vector3>();
 
 		Mesh mesh = new Mesh();
@@ -540,8 +569,8 @@ public class MainController : Singleton<MainController>
 
 
 		return controlPointPosList;*/
-			#endregion
-		
+		#endregion
+
 	}
 	public void CreateTorusMesh(Vector3 centerPos, float width, float height, float length, float innerWidthRatio, float innerHeightDownRatio, float innerHeightTopRatio, float innerLengthRatio, float rotateAngle, MeshFilter meshFilter)
 	{
@@ -827,7 +856,7 @@ public class MainController : Singleton<MainController>
 		mesh.RecalculateBounds();
 		mesh.Optimize();
 	}
-	public List<Vector3> CreateRegularCurveRingMesh(Vector3 centerPos, int nbSides, float radius, float height, float rotateAngle, MeshFilter meshFilter)
+	public List<Vector3> CreateRegularCurveRingMesh(Vector3 centerPos, List<Vector3> localPosList, Vector3 axis, int nbSides, int segmentation, float rotateAngle, MeshFilter meshFilter)
 	{
 
 		List<Vector3> controlPointPosList = new List<Vector3>();
@@ -837,17 +866,115 @@ public class MainController : Singleton<MainController>
 		meshFilter.mesh = mesh;
 		mesh.Clear();
 
+		float _2pi = Mathf.PI * 2f;
+
+		List<Vector3> globalPosList = new List<Vector3>();
+		for (int i = 0; i < localPosList.Count; i++)
+		{
+			Vector3 pos = localPosList[i] + centerPos;
+			globalPosList.Add(pos);
+		}
+
+		globalPosList.Reverse();
+
+		CatLine curve = new CatLine();
+		curve.controlPointPosList = globalPosList;
+		curve.SetLineNumberOfPoints(segmentation);
+		curve.SetCatmullRom(0.1f, 1);
+		// PosList
+		Vector3[] pList = new Vector3[(nbSides + 1) * curve.anchorInnerPointlist.Count];
+		int vert = 0;
+		for (int i = 0; i < curve.anchorInnerPointlist.Count; i++)
+		{
+			float radius = DistancePointLine(curve.anchorInnerPointlist[i], centerPos, axis);
+			Vector3 radiusCenterPos = ProjectPointLine(curve.anchorInnerPointlist[i], centerPos, axis) + centerPos;
+	
+			pList[vert++] = radiusCenterPos;
+			for (int j = 0; j < nbSides; j++)
+			{
+				float rad = (float)j / nbSides * _2pi;
+				Vector3 pos = Quaternion.AngleAxis(rotateAngle, Vector3.up) * (new Vector3(Mathf.Cos(rad) * radius, 0f, Mathf.Sin(rad) * radius) + radiusCenterPos);
+				pList[vert++] = pos;
+				controlPointPosList.Add(pos);
+				ShowPos(pos, building, Color.red, 0.8f);
+			}
+		}
+		#region Vertices
+		Vector3[] vertices = new Vector3[3 * nbSides * 2 + curve.anchorInnerPointlist.Count * 6 * nbSides];
+		vert = 0;
+
+		// Bottom cap
+		for (int i = 0; i < nbSides; i++)
+		{
+			vertices[vert++] = pList[0];
+			vertices[vert++] = pList[i + 1];
+			vertices[vert++] = pList[(i + 1) % nbSides + 1];
+		}
+
+		// Top cap
+		for (int i = 0; i < nbSides; i++)
+		{
+			vertices[vert++] = pList[(nbSides + 1) * (curve.anchorInnerPointlist.Count - 1)];
+			vertices[vert++] = pList[(i + 1) % nbSides + 1 + (nbSides + 1) * (curve.anchorInnerPointlist.Count - 1)];
+			vertices[vert++] = pList[i + 1 + (nbSides + 1) * (curve.anchorInnerPointlist.Count - 1)];
+		}
+
+		// Sides
+		for (int i = 0; i < nbSides; i++)
+		{
+			for (int j = 0; j < curve.anchorInnerPointlist.Count - 1; j++)
+			{
+				vertices[vert++] = pList[i + 1 + j * (nbSides + 1)];
+				vertices[vert++] = pList[(i + 1) % nbSides + 1 + (nbSides + 1) + j * (nbSides + 1)];
+				vertices[vert++] = pList[(i + 1) % nbSides + 1 + j * (nbSides + 1)];
 
 
+				vertices[vert++] = pList[i + 1 + j * (nbSides + 1)];
+				vertices[vert++] = pList[i + 1 + (nbSides + 1) + j * (nbSides + 1)];
+				vertices[vert++] = pList[(i + 1) % nbSides + 1 + (nbSides + 1) + j * (nbSides + 1)];
+			}
 
+		}
 
+		#endregion
+		#region Normales
+		Vector3[] normales = new Vector3[vertices.Length];
+		vert = 0;
+		// Bottom cap
+		for (int i = 0; i < nbSides * 3; i++)
+		{
+			normales[vert++] = Vector3.down;
+		}
+		// Top cap
+		for (int i = 0; i < nbSides * 3; i++)
+		{
+			normales[vert++] = Vector3.up;
+		}
+		for (int i = 0; i < nbSides; i++)
+		{
+			for (int j = 0; j < curve.anchorInnerPointlist.Count - 1; j++)
+			{
+				Vector3 nor = Vector3.Cross(pList[i + 1 + (nbSides + 1) + j * (nbSides + 1)] - pList[i + 1 + j * (nbSides + 1)], pList[(i + 1) % nbSides + 1 + j * (nbSides + 1)] - pList[i + 1 + j * (nbSides + 1)]).normalized;
+				for (int n = 0; n < 6; n++)
+				{
+					normales[vert++] = nor;
+				}
+			}
 
-
-
-		//mesh.vertices = vertices;
-		//mesh.normals = normales;
+		}
+		#endregion
+		#region Triangles
+		int[] triangles = new int[vertices.Length];
+		vert = 0;
+		for (int i = 0; i < triangles.Length; i++)
+		{
+			triangles[vert++] = i;
+		}
+		#endregion
+		mesh.vertices = vertices;
+		mesh.normals = normales;
 		//mesh.uv = uvs;
-		//mesh.triangles = triangles;
+		mesh.triangles = triangles;
 
 		mesh.RecalculateBounds();
 		mesh.Optimize();

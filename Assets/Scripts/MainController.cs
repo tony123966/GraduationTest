@@ -22,8 +22,6 @@ public class MainController : Singleton<MainController>
 	//FormFactor***********************************************************************
 	public enum FormFactorSideType { ThreeSide = 3, FourSide = 4, FiveSide = 5, SixSide = 6, EightSide = 8 };
 	public FormFactorSideType sides = FormFactorSideType.ThreeSide;
-	public enum FormFactorType { RegularRing = 0, FreeQuad = 1 };//Ring 正多邊形, FreeQuad 非等邊長矩形
-	public FormFactorType formFactorType = FormFactorType.RegularRing;
 	//**********************************************************************************
 
 
@@ -42,6 +40,9 @@ public class MainController : Singleton<MainController>
 		PlatformController.Instance.InitFunction();
 		BodyController.Instance.InitFunction();
 		RoofController.Instance.InitFunction();
+
+		ShowPos(PlatformController.Instance.topPointPosList[0], building,Color.blue);
+		ShowPos(PlatformController.Instance.topPointPosList[PlatformController.Instance.topPointPosList.Count-1], building, Color.yellow);
 	}
 
 	public float DistancePointLine(Vector3 point, Vector3 lineStart, Vector3 dir)

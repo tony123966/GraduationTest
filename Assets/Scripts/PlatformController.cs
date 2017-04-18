@@ -12,14 +12,14 @@ public class PlatformController : Singleton<PlatformController>
 	public float platformFrontWidth = 10;
 	public float platformFrontLength = 30;
 
-	public float platformHeight=5;
+	public float platformHeight = 5;
 
 	public Vector3 platformCenter = Vector3.zero;
 	//**********************************************************************************
 	public List<Vector3> topPointPosList;
 	public List<Vector3> bottomPointPosList;
 
-	public bool isCurvePlatform=true;
+	public bool isCurvePlatform = true;
 	//***********************************************************************
 
 	public void InitFunction()
@@ -29,7 +29,10 @@ public class PlatformController : Singleton<PlatformController>
 		platform.transform.parent = MainController.Instance.building.transform;
 		//***********************************************************************
 		CreatePlatform(platformCenter);
-		CreateStair();
+		if (!isCurvePlatform) CreateStair(0, platformFrontWidth * 0.8f, platformHeight, platformFrontWidth * 0.1f);
+
+		topPointPosList.Reverse();
+		bottomPointPosList.Reverse();
 	}
 	public void CreatePlatform(Vector3 pos)
 	{
@@ -43,46 +46,44 @@ public class PlatformController : Singleton<PlatformController>
 
 		List<Vector3> controlPointPosList = new List<Vector3>();
 		controlPointPosList.Clear();
-		switch (MainController.Instance.formFactorType)
+
+		//初始值******************************************************************************
+		float platformRadius = (platformFrontWidth / 2.0f) / Mathf.Sin(2f * Mathf.PI / ((int)MainController.Instance.sides * 2));
+		//***********************************************************************************
+
+		if (isCurvePlatform)
 		{
-
-			case MainController.FormFactorType.RegularRing:
-				//初始值******************************************************************************
-				float platformRadius = (platformFrontWidth / 2.0f) / Mathf.Sin(2f * Mathf.PI / ((int)MainController.Instance.sides * 2));
-				//***********************************************************************************
-				if(isCurvePlatform)
-				{
-					Vector3 centerPos=Vector3.zero;
-					List<Vector3> localPosList=new List<Vector3>();
-					localPosList.Add(new Vector3(15,2,15));
-					localPosList.Add(new Vector3(16, 0, 16));
-					localPosList.Add(new Vector3(13, -3, 13));
-					localPosList.Add(new Vector3(18, -8, 18));
-					controlPointPosList = MainController.Instance.CreateRegularCurveRingMesh(centerPos, localPosList,Vector3.up, (int)MainController.Instance.sides,100, 360.0f / (int)MainController.Instance.sides / 2, meshFilter);
-				}
-				else 
-				{ 
-	
-					controlPointPosList = MainController.Instance.CreateRegularRingMesh(pos, (int)MainController.Instance.sides, platformRadius, platformHeight, 360.0f / (int)MainController.Instance.sides/2, meshFilter);
-				}
-				break;
-			case MainController.FormFactorType.FreeQuad:
-
-				controlPointPosList = MainController.Instance.CreateCubeMesh(pos, platformFrontWidth, platformHeight, platformFrontLength, 0, meshFilter);
-				break;
+			Vector3 centerPos = Vector3.zero;
+			List<Vector3> localPosList = new List<Vector3>();
+			localPosList.Add(new Vector3(15, 2, 15));
+			localPosList.Add(new Vector3(16, 0, 16));
+			localPosList.Add(new Vector3(13, -3, 13));
+			localPosList.Add(new Vector3(18, -8, 18));
+			controlPointPosList = MainController.Instance.CreateRegularCurveRingMesh(centerPos, localPosList, Vector3.up, (int)MainController.Instance.sides, 100, 360.0f / (int)MainController.Instance.sides / 2, meshFilter);
+			platformHeight = Mathf.Abs(localPosList[0].y - localPosList[localPosList.Count - 1].y);
 		}
+		else
+		{
+			if (MainController.Instance.sides == MainController.FormFactorSideType.FourSide)
+			{
+				controlPointPosList = MainController.Instance.CreateCubeMesh(pos, platformFrontWidth, platformHeight, platformFrontLength, 0, meshFilter);
+			}
+			else
+			{
+				controlPointPosList = MainController.Instance.CreateRegularRingMesh(pos, (int)MainController.Instance.sides, platformRadius, platformHeight, 360.0f / (int)MainController.Instance.sides / 2, meshFilter);
+			}
+		}
+
 		bottomPointPosList.Clear();
 		topPointPosList.Clear();
 		for (int i = 0; i < (int)MainController.Instance.sides; i++)
 		{
 			bottomPointPosList.Add(controlPointPosList[i]);
 			//topPointPosList.Add(controlPointPosList[i + (int)MainController.Instance.sides]);
-			topPointPosList.Add(controlPointPosList[(controlPointPosList.Count - 1) - ((int)(MainController.Instance.sides-1))+i]);
+			topPointPosList.Add(controlPointPosList[(controlPointPosList.Count - 1) - ((int)(MainController.Instance.sides - 1)) + i]);
 		}
-		topPointPosList.Reverse();
-		bottomPointPosList.Reverse();;
 	}
-	public void CreateStair()
+	public void CreateStair(int index, float width, float height, float length)
 	{
 		GameObject stair = new GameObject("Stair");
 		stair.transform.position = platformCenter;
@@ -90,7 +91,12 @@ public class PlatformController : Singleton<PlatformController>
 		MeshFilter meshFilter = stair.AddComponent<MeshFilter>();
 		MeshRenderer meshRenderer = stair.AddComponent<MeshRenderer>();
 		meshRenderer.material.color = Color.white;
-		MainController.Instance.CreateStairMesh(new Vector3(50,0,0), 10, 10, 10, 0, meshFilter);
+		Vector3 dir = Vector3.Cross(Vector3.up, topPointPosList[(index + 1) % topPointPosList.Count] - topPointPosList[index]).normalized;
+		Vector3 pos = (topPointPosList[index] + topPointPosList[(index + 1) % topPointPosList.Count]) / 2.0f;
+		pos += dir * length / 2.0f;
+		pos.y = (topPointPosList[index].y + bottomPointPosList[index].y) / 2.0f;
+		float rotateAngle = (Vector3.Dot(Vector3.right, dir) < 0 ? Vector3.Angle(dir, Vector3.forward) : 180 - Vector3.Angle(dir, Vector3.forward));
+		MainController.Instance.CreateStairMesh(pos, width, height, length, rotateAngle, meshFilter);
 
 	}
 }

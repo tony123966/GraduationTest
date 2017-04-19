@@ -242,14 +242,14 @@ public class RoofController : Singleton<RoofController>
 		Wu_Dian_DingMainRidgeWidth = BodyController.Instance.eaveColumnHeight * 0.4f;
 		Lu_DingMainRidgeOffset = BodyController.Instance.eaveColumnHeight * 0.5f;
 
-
-		roundTileModelStruct = new ModelStruct(roundTileModel, roundTileModelRotation, roundTileModelScale);
+        //瓦片結構 : 設定好筒瓦、平瓦、簷瓦模組與個別的旋轉與尺寸向量
+        roundTileModelStruct = new ModelStruct(roundTileModel, roundTileModelRotation, roundTileModelScale);
 		flatTileModelStruct = new ModelStruct(flatTileModel, flatTileModelRotation, flatTileModelScale);
 		eaveTileModelStruct = new ModelStruct(eaveTileModel, eaveTileModelRotation, eaveTileModelScale);
 		roofSurfaceModelStruct = new RoofSurfaceModelStruct(roundTileModelStruct, flatTileModelStruct, eaveTileModelStruct);
 
-
-		mainRidgeTileModelStruct = new ModelStruct(mainRidgeTileModel, mainRidgeTileModelRotation, mainRidgeTileModelScale);
+        //主瘠結構 : 設定好主脊模組跟旋轉、尺寸向量
+        mainRidgeTileModelStruct = new ModelStruct(mainRidgeTileModel, mainRidgeTileModelRotation, mainRidgeTileModelScale);
 		mainRidgeModelStruct = new MainRidgeModelStruct(mainRidgeTileModelStruct);
 		//************************************************************************************
 		roof = new GameObject("Roof");
@@ -258,7 +258,12 @@ public class RoofController : Singleton<RoofController>
 
 		CreateRoof();
 	}
-	GameObject CreateControlPoint(GameObject parentObj, Vector3 worldPos, string name = "ControlPoint")//Create控制點
+   /**
+    * 建立控制點
+    * 輸入 : Parent GameObj、世界座標、控制點名稱
+    * 回傳 : 控制點 (GameObject)
+    * **/
+    GameObject CreateControlPoint(GameObject parentObj, Vector3 worldPos, string name = "ControlPoint")//Create控制點
 	{
 		GameObject newControlPoint = new GameObject(name);
 		newControlPoint.transform.position = worldPos;
@@ -338,7 +343,11 @@ public class RoofController : Singleton<RoofController>
 
 	}
 
-	List<Vector3> CreateRoofSurfaceTile(RoofSurfaceModelStruct roofSurfaceModelStructGameObject, GameObject parent, RidgeStruct baseList, RidgeStruct refList, RidgeStruct midRidgeStruct, RidgeStruct eaveStructList, int dir, RidgeStruct mainRidgeStruct, Vector3 roofSurfaceTileRidgeUpPointPos)
+    /**
+     * 建立屋頂表面的瓦片
+     * 
+     */
+    List<Vector3> CreateRoofSurfaceTile(RoofSurfaceModelStruct roofSurfaceModelStructGameObject, GameObject parent, RidgeStruct baseList, RidgeStruct refList, RidgeStruct midRidgeStruct, RidgeStruct eaveStructList, int dir, RidgeStruct mainRidgeStruct, Vector3 roofSurfaceTileRidgeUpPointPos)
 	{
 		List<Vector3> roofSurfaceTileList = new List<Vector3>();
 
@@ -499,7 +508,12 @@ public class RoofController : Singleton<RoofController>
 		obj.transform.localScale = Vector3.one * localScale;
 		obj.GetComponent<MeshRenderer>().material.color = color;
 	}
-	int FindNearestPointInList2Plane(Plane plane, List<Vector3> list, int startIndex, int endIndex, float threshold = 0)
+
+    /**
+     * 輸入 : plane平面、list線段中連續點位置、startIndex搜尋起始點、endIndex搜尋終點、threshold距離門檻值
+     * 輸出 : list線段連續點位置中最接近平面之點index
+     */
+    int FindNearestPointInList2Plane(Plane plane, List<Vector3> list, int startIndex, int endIndex, float threshold = 0)
 	{
 		float pointMinDis2Plane = float.MaxValue;
 		int index = startIndex;
@@ -560,7 +574,12 @@ public class RoofController : Singleton<RoofController>
 		return index;
 
 	}
-	int FindNearestPointInList2Point(Vector3 point, List<Vector3> list, int startIndex, int endIndex)
+    /**
+     * 找出列表中與指定點有最短距離的索引值
+     * 輸入 : 指定點、點列表、起終點Index
+     * 輸出 : 列表中與指定點最短距離的索引值
+     */
+    int FindNearestPointInList2Point(Vector3 point, List<Vector3> list, int startIndex, int endIndex)
 	{
 		float pointMinDis2Plane = float.MaxValue;
 
@@ -586,7 +605,14 @@ public class RoofController : Singleton<RoofController>
 		}
 		return dis;
 	}
-	RidgeStruct CreateMainRidgeStruct(int eaveColumnListIndex, Vector3 topControlPointPos)
+
+    /**
+     *  建立主脊結構 (用屋頂頂端控制點與圓柱頂端位置)
+     *  輸入:圓柱列表索引、屋頂頂端控制點位置
+     *  流程:建立頭尾與中間控制點後加至控制點列表中，並把曲線的控制點也設為相同點，之後設定畫曲線點數
+     *  
+     */
+    RidgeStruct CreateMainRidgeStruct(int eaveColumnListIndex, Vector3 topControlPointPos)
 	{
 		RidgeStruct newRidgeStruct = CreateRidgeSturct("MainRidge", roof);
 
@@ -630,7 +656,13 @@ public class RoofController : Singleton<RoofController>
 		return newRidgeStruct;
 
 	}
-	RidgeStruct CreateEaveStruct(RidgeStruct RightMainRidgeStruct, RidgeStruct LeftMainRidgeStruct)
+    /**
+     * 建立屋簷結構
+     * 輸入 : 右左兩主脊
+     * 流程 : 建立頭尾與中間控制點後，再建立中間至尾端的中間控制點(為了控制屋簷由平坦到上翹的部分)
+     *        ，依序加入至曲線控制點後設定畫線點數，
+     */
+    RidgeStruct CreateEaveStruct(RidgeStruct RightMainRidgeStruct, RidgeStruct LeftMainRidgeStruct)
 	{
 
 		RidgeStruct newRidgeStruct = CreateRidgeSturct("Eave", roof);
@@ -915,7 +947,14 @@ public class RoofController : Singleton<RoofController>
 		return newRoofSurfaceStruct;
 	}
 
-	private RoofSurfaceStruct CreateRoofSurfaceA(RidgeStruct RightMainRidgeStruct, RidgeStruct LeftMainRidgeStruct, RidgeStruct eaveStruct)
+    /**
+    * 建造屋頂表面
+    * 輸入: 右側主脊、左側主脊、屋簷
+    * 輸出: 屋頂表面結構
+    * 流程: 
+    * 1.找出屋頂表面中間控制線上中下點
+    **/
+    private RoofSurfaceStruct CreateRoofSurfaceA(RidgeStruct RightMainRidgeStruct, RidgeStruct LeftMainRidgeStruct, RidgeStruct eaveStruct)
 	{
 
 		//for (int i = 0; i < (int)MainController.Instance.sides; i++)
@@ -925,15 +964,18 @@ public class RoofController : Singleton<RoofController>
 		RidgeStruct newMidRidgeStruct = CreateRidgeSturct("MidRoofSurfaceTileRidge", newRoofSurfaceStruct.body);
 
 
-		/***************************************找兩個mainRidge中間垂直的roofSurfaceTileRidge***********************************************************/
-		//FindMidRoofSurfaceMidPoint
-		Vector2 v1 = new Vector2(LeftMainRidgeStruct.controlPointDictionaryList[MainRidgeControlPointType.MidControlPoint.ToString()].transform.position.x - LeftMainRidgeStruct.controlPointDictionaryList[MainRidgeControlPointType.TopControlPoint.ToString()].transform.position.x, LeftMainRidgeStruct.controlPointDictionaryList[MainRidgeControlPointType.MidControlPoint.ToString()].transform.position.z - LeftMainRidgeStruct.controlPointDictionaryList[MainRidgeControlPointType.TopControlPoint.ToString()].transform.position.z);
+        /***************************************找兩個mainRidge中間垂直的roofSurfaceTileRidge***********************************************************/
+        //FindMidRoofSurfaceMidPoint : 左右主脊的中間控制點 - 上方控制點找出方向向量，找出兩向量夾角
+        Vector2 v1 = new Vector2(LeftMainRidgeStruct.controlPointDictionaryList[MainRidgeControlPointType.MidControlPoint.ToString()].transform.position.x - LeftMainRidgeStruct.controlPointDictionaryList[MainRidgeControlPointType.TopControlPoint.ToString()].transform.position.x, LeftMainRidgeStruct.controlPointDictionaryList[MainRidgeControlPointType.MidControlPoint.ToString()].transform.position.z - LeftMainRidgeStruct.controlPointDictionaryList[MainRidgeControlPointType.TopControlPoint.ToString()].transform.position.z);
 		Vector2 v2 = new Vector2(RightMainRidgeStruct.controlPointDictionaryList[MainRidgeControlPointType.MidControlPoint.ToString()].transform.position.x - RightMainRidgeStruct.controlPointDictionaryList[MainRidgeControlPointType.TopControlPoint.ToString()].transform.position.x, RightMainRidgeStruct.controlPointDictionaryList[MainRidgeControlPointType.MidControlPoint.ToString()].transform.position.z - RightMainRidgeStruct.controlPointDictionaryList[MainRidgeControlPointType.TopControlPoint.ToString()].transform.position.z);
 
 		float angle = Vector2.Angle(v1, v2);
 
-		//midRoofSurfaceTopPoint
-		Vector3 midRoofSurfaceTopPointPos = (RightMainRidgeStruct.controlPointDictionaryList[MainRidgeControlPointType.TopControlPoint.ToString()].transform.position + LeftMainRidgeStruct.controlPointDictionaryList[MainRidgeControlPointType.TopControlPoint.ToString()].transform.position) / 2.0f;
+        //*************** 1 ******************//
+        //*** 找出屋頂表面中間控制線上中下點 ***//
+        //************************************//
+        //midRoofSurfaceTopPoint
+        Vector3 midRoofSurfaceTopPointPos = (RightMainRidgeStruct.controlPointDictionaryList[MainRidgeControlPointType.TopControlPoint.ToString()].transform.position + LeftMainRidgeStruct.controlPointDictionaryList[MainRidgeControlPointType.TopControlPoint.ToString()].transform.position) / 2.0f;
 		GameObject midRoofSurfaceTopPoint = CreateControlPoint(newMidRidgeStruct.body, midRoofSurfaceTopPointPos, MidRoofSurfaceControlPointType.MidRoofSurfaceTopPoint.ToString());
 		newMidRidgeStruct.controlPointDictionaryList.Add(MidRoofSurfaceControlPointType.MidRoofSurfaceTopPoint.ToString(), midRoofSurfaceTopPoint);
 		//midRoofSurfaceDownPoint
@@ -955,16 +997,16 @@ public class RoofController : Singleton<RoofController>
 
 
 		ShowPos(midRoofSurfaceMidPointPos, newMidRidgeStruct.body, new Color(1, 0, 1), 1f);
-		/***************************************用AnchorLength取MidRoofSurfaceTileRidge上的瓦片************************************************************/
+        /***************************************用AnchorLength取MidRoofSurfaceTileRidge上的瓦片************************************************************/
+        //*** 屋頂表面中間產瓦片 ***//
+        newMidRidgeStruct.tilePosList = newMidRidgeStruct.ridgeCatLine.CalculateAnchorPosByInnerPointList(newMidRidgeStruct.ridgeCatLine.anchorInnerPointlist, newMidRidgeStruct.ridgeCatLine.anchorInnerPointlist.Count - 1, 0, roofSurfaceTileHeight);
+        //計算上仰傾斜角度=0 (疑問..想請教大概在做啥
+        CreateRoofSurfaceTile(roofSurfaceModelStruct, newMidRidgeStruct.body, newMidRidgeStruct, newMidRidgeStruct, newMidRidgeStruct, eaveStruct, 0, RightMainRidgeStruct, midRoofSurfaceTopPointPos);
 
-		newMidRidgeStruct.tilePosList = newMidRidgeStruct.ridgeCatLine.CalculateAnchorPosByInnerPointList(newMidRidgeStruct.ridgeCatLine.anchorInnerPointlist, newMidRidgeStruct.ridgeCatLine.anchorInnerPointlist.Count - 1, 0, roofSurfaceTileHeight);
-		//計算上仰傾斜角度=0
-		CreateRoofSurfaceTile(roofSurfaceModelStruct, newMidRidgeStruct.body, newMidRidgeStruct, newMidRidgeStruct, newMidRidgeStruct, eaveStruct, 0, RightMainRidgeStruct, midRoofSurfaceTopPointPos);
 
-
-		/***************************************由Eave上的AnchorPoint切割平面 用於切出其他垂直的roofSurfaceTileRidge(右側)***********************************************************/
-
-		RidgeStruct eaveRightRidgeStruct = CreateRidgeSturct("EaveRightRidgeStruct", newRoofSurfaceStruct.body);
+        /***************************************由Eave上的AnchorPoint切割平面 用於切出其他垂直的roofSurfaceTileRidge(右側)***********************************************************/
+        //*** 做一個右半邊屋簷的瘠並將parent設為屋頂表面，並依照瓦片寬度算出內部錨點
+        RidgeStruct eaveRightRidgeStruct = CreateRidgeSturct("EaveRightRidgeStruct", newRoofSurfaceStruct.body);
 		for (int k = 0; k < eaveStruct.ridgeCatLine.anchorInnerPointlist.Count / 2; k++)
 		{
 			eaveRightRidgeStruct.ridgeCatLine.anchorInnerPointlist.Add(eaveStruct.ridgeCatLine.anchorInnerPointlist[k]);
@@ -973,14 +1015,19 @@ public class RoofController : Singleton<RoofController>
 
 		eaveRightRidgeStruct.ridgeCatLine.anchorInnerPointlist = eaveRightRidgeStruct.ridgeCatLine.CalculateAnchorPosByInnerPointList(eaveRightRidgeStruct.ridgeCatLine.anchorInnerPointlist, eaveRightRidgeStruct.ridgeCatLine.anchorInnerPointlist.Count - 1, 0, roofSurfaceTileWidth);
 
-		//VerCutPlane
-		Plane verticalCutPlane = new Plane();
+        //VerCutPlane
+        //*** 新增三個平面，將傳入的屋簷主脊用該起終點位置相減取得的向量定為法向量並正規化
+        //*** verticalCutPlane : 算屋頂表面子瘠用輔助平面 
+        //*** verticalMirrorPlane : 以屋簷主脊中點與剛剛的法向量形成一平面
+        //*** surfacePlane : 疑問?貌似沒用到
+        Plane verticalCutPlane = new Plane();
 		Plane verticalMirrorPlane = new Plane();
 		Plane surfacePlane = new Plane();
 		Vector3 verticalCutPlaneNormal = ((eaveStruct.controlPointDictionaryList[EaveControlPointType.StartControlPoint.ToString()].transform.position - eaveStruct.controlPointDictionaryList[EaveControlPointType.EndControlPoint.ToString()].transform.position)).normalized;
 		verticalMirrorPlane.SetNormalAndPosition(verticalCutPlaneNormal, midRoofSurfaceDownPointPos);
 
-		Vector3 surfacePlaneNormal = Vector3.Cross(RightMainRidgeStruct.controlPointDictionaryList[MainRidgeControlPointType.DownControlPoint.ToString()].transform.position - RightMainRidgeStruct.controlPointDictionaryList[MainRidgeControlPointType.TopControlPoint.ToString()].transform.position, midRoofSurfaceDownPointPos - RightMainRidgeStruct.controlPointDictionaryList[MainRidgeControlPointType.TopControlPoint.ToString()].transform.position).normalized;
+        //(右邊主瘠的上下控制點找出方向向量) 外積 (屋簷中點與右邊主脊上控制點找出方向向量)
+        Vector3 surfacePlaneNormal = Vector3.Cross(RightMainRidgeStruct.controlPointDictionaryList[MainRidgeControlPointType.DownControlPoint.ToString()].transform.position - RightMainRidgeStruct.controlPointDictionaryList[MainRidgeControlPointType.TopControlPoint.ToString()].transform.position, midRoofSurfaceDownPointPos - RightMainRidgeStruct.controlPointDictionaryList[MainRidgeControlPointType.TopControlPoint.ToString()].transform.position).normalized;
 		surfacePlane.SetNormalAndPosition(surfacePlaneNormal, midRoofSurfaceMidPointPos);
 		//紀錄前一次Index用於迴圈加速
 		int roofSurfaceMidPointStartingIndex_R = 0;
@@ -990,8 +1037,8 @@ public class RoofController : Singleton<RoofController>
 		RidgeStruct lastRightRidgeStruct = newMidRidgeStruct;
 		RidgeStruct lastLeftRidgeStruct = newMidRidgeStruct;
 
-
-		CatLine roofSurfaceMidPointLine = new CatLine();
+        // Tony哥的由屋頂中間控制線至屋簷的半圓取線
+        CatLine roofSurfaceMidPointLine = new CatLine();
 		//roofSurfaceMidPointLine.controlPointPosList.Add(LeftMainRidgeStruct.controlPointDictionaryList[MainRidgeControlPointType.DownControlPoint.ToString()].transform.position);
 		//roofSurfaceMidPointLine.controlPointPosList.Add(eaveStruct.controlPointDictionaryList[EaveControlPointType.MidLControlPoint.ToString()].transform.position);
 		roofSurfaceMidPointLine.controlPointPosList.Add(midRoofSurfaceMidPointPos);
@@ -1000,7 +1047,8 @@ public class RoofController : Singleton<RoofController>
 		roofSurfaceMidPointLine.SetLineNumberOfPoints(1000);
 		roofSurfaceMidPointLine.SetCatmullRom(anchorDis, 1);
 
-		CatLine roofSurfaceMidPointLineA = new CatLine();
+        //中間主脊控制線中點至右邊主脊下方端點之連線
+        CatLine roofSurfaceMidPointLineA = new CatLine();
 
 		roofSurfaceMidPointLineA.controlPointPosList.Add(midRoofSurfaceMidPointPos);
 		roofSurfaceMidPointLineA.controlPointPosList.Add(RightMainRidgeStruct.controlPointDictionaryList[MainRidgeControlPointType.DownControlPoint.ToString()].transform.position);
@@ -1017,14 +1065,16 @@ public class RoofController : Singleton<RoofController>
 
 			verticalCutPlane.SetNormalAndPosition(verticalCutPlaneNormal, eaveRightRidgeStruct.ridgeCatLine.anchorInnerPointlist[n]);
 
-			Vector3 planeOffsetVector = Vector3.Project((eaveRightRidgeStruct.ridgeCatLine.anchorInnerPointlist[n] - eaveRightRidgeStruct.ridgeCatLine.anchorInnerPointlist[0]), (eaveStruct.controlPointDictionaryList[EaveControlPointType.StartControlPoint.ToString()].transform.position - eaveStruct.controlPointDictionaryList[EaveControlPointType.EndControlPoint.ToString()].transform.position));
+            //兩個錨點間方向向量對屋簷主脊上的投影(這樣不就是=兩個錨點間方向向量?)
+            Vector3 planeOffsetVector = Vector3.Project((eaveRightRidgeStruct.ridgeCatLine.anchorInnerPointlist[n] - eaveRightRidgeStruct.ridgeCatLine.anchorInnerPointlist[0]),
+                (eaveStruct.controlPointDictionaryList[EaveControlPointType.StartControlPoint.ToString()].transform.position - eaveStruct.controlPointDictionaryList[EaveControlPointType.EndControlPoint.ToString()].transform.position));
 			//Right
 			RidgeStruct newRightRidgeStruct = CreateRidgeSturct("RightRoofSurfaceTileRidge", newRoofSurfaceStruct.body);
 
 			RidgeStruct newLeftRidgeStruct = CreateRidgeSturct("LeftRoofSurfaceTileRidge", newRoofSurfaceStruct.body);
 
-
-			Vector3 roofSurfaceTileRidgeUpPointPos = Vector3.zero;
+            //*** 屋頂表面放置瓦片用脊
+            Vector3 roofSurfaceTileRidgeUpPointPos = Vector3.zero;
 			Vector3 roofSurfaceTileRidgeMidPointPos = Vector3.zero;
 			Vector3 roofSurfaceTileRidgeDownPointPos = Vector3.zero;
 
@@ -1033,38 +1083,42 @@ public class RoofController : Singleton<RoofController>
 			Vector3 lastRoofSurfaceTileRidgeDownPointPos = Vector3.zero;
 
 
-			//FindPointOnMainRidgeCloser2Plane
+            //FindPointOnMainRidgeCloser2Plane : 找主脊點上離輔助平面最近的點，若沒有的話(ex:無殿頂的主脊需延伸一段後開始)直接取中間控制線上點位移一個屋瓦寬度的位置 
 
-			roofSurface2MainRidgeStartingIndex_R = FindNearestPointInList2Plane(verticalCutPlane, RightMainRidgeStruct.ridgeCatLine.anchorInnerPointlist, roofSurface2MainRidgeStartingIndex_R, RightMainRidgeStruct.ridgeCatLine.anchorInnerPointlist.Count - 1, 0.01f);
+            roofSurface2MainRidgeStartingIndex_R = FindNearestPointInList2Plane(verticalCutPlane, RightMainRidgeStruct.ridgeCatLine.anchorInnerPointlist, roofSurface2MainRidgeStartingIndex_R, RightMainRidgeStruct.ridgeCatLine.anchorInnerPointlist.Count - 1, 0.01f);
 
 			roofSurfaceTileRidgeUpPointPos = (roofSurface2MainRidgeStartingIndex_R != 0) ? RightMainRidgeStruct.ridgeCatLine.anchorInnerPointlist[roofSurface2MainRidgeStartingIndex_R] : midRoofSurfaceTopPointPos + planeOffsetVector;
 
-			//FindPointOnEaveCloser2Plane
-			roofSurfaceTileRidgeDownPointPos = eaveRightRidgeStruct.ridgeCatLine.anchorInnerPointlist[n];
+            //FindPointOnEaveCloser2Plane : 屋簷主脊目前錨點本身
+            roofSurfaceTileRidgeDownPointPos = eaveRightRidgeStruct.ridgeCatLine.anchorInnerPointlist[n];
 
 
 			//FindPointOnRoofSurfaceMidPointLineCloser2Plane
 			roofSurfaceMidPointStartingIndex_R = FindNearestPointInList2Plane(verticalCutPlane, roofSurfaceMidPointLine.anchorInnerPointlist, roofSurfaceMidPointStartingIndex_R, roofSurfaceMidPointLine.anchorInnerPointlist.Count - 1);
-
 			roofSurfaceMidPointStartingIndex_R_A = FindNearestPointInList2Plane(verticalCutPlane, roofSurfaceMidPointLineA.anchorInnerPointlist, roofSurfaceMidPointStartingIndex_R_A, roofSurfaceMidPointLineA.anchorInnerPointlist.Count - 1);
-			float ratioA = ((float)(n) / ((eaveRightRidgeStruct.ridgeCatLine.anchorInnerPointlist.Count - 1)));
-			float ratioC = ((float)Mathf.Abs(n - eaveRightRidgeStruct.ridgeCatLine.anchorInnerPointlist.Count / 2) / ((eaveRightRidgeStruct.ridgeCatLine.anchorInnerPointlist.Count - 1 - eaveRightRidgeStruct.ridgeCatLine.anchorInnerPointlist.Count / 2)));
-			roofSurfaceTileRidgeMidPointPos = (roofSurfaceMidPointLineA.anchorInnerPointlist[roofSurfaceMidPointStartingIndex_R_A]);
+           
+            //*** ratioA : 目前偵測點佔整個右側屋簷的比例。 ratioC:暫未用到
+            float ratioA = ((float)(n) / ((eaveRightRidgeStruct.ridgeCatLine.anchorInnerPointlist.Count - 1)));
+			//float ratioC = ((float)Mathf.Abs(n - eaveRightRidgeStruct.ridgeCatLine.anchorInnerPointlist.Count / 2) / ((eaveRightRidgeStruct.ridgeCatLine.anchorInnerPointlist.Count - 1 - eaveRightRidgeStruct.ridgeCatLine.anchorInnerPointlist.Count / 2)));
+           
+            //*** 屋頂表面放置瓦片用脊的中點，依照比例取半圓取線與切平面焦點位置 + 瓦片用脊上下兩點之中點位置
+            roofSurfaceTileRidgeMidPointPos = (roofSurfaceMidPointLineA.anchorInnerPointlist[roofSurfaceMidPointStartingIndex_R_A]);
 
-			//roofSurfaceTileRidgeMidPointPos = roofSurfaceMidPointLine.anchorInnerPointlist[roofSurfaceMidPointStartingIndex_R]* (1.0f - ratioA) + ((roofSurfaceTileRidgeUpPointPos + roofSurfaceTileRidgeDownPointPos) / 2.0f) * ratioA;
-			roofSurfaceTileRidgeMidPointPos.y = (roofSurfaceMidPointLine.anchorInnerPointlist[roofSurfaceMidPointStartingIndex_R].y * (1.0f - ratioA) + roofSurfaceMidPointLineA.anchorInnerPointlist[roofSurfaceMidPointStartingIndex_R_A].y * ratioA) * (1.0f - ratioA) + ((roofSurfaceTileRidgeUpPointPos.y + roofSurfaceTileRidgeDownPointPos.y) / 2.0f) * ratioA;
-			//roofSurfaceTileRidgeMidPointPos = (roofSurfaceMidPointLine.anchorInnerPointlist[roofSurfaceMidPointStartingIndex_R] + surfacePlane.GetDistanceToPoint(roofSurfaceMidPointLine.anchorInnerPointlist[roofSurfaceMidPointStartingIndex_R]) * ratioC * surfacePlaneNormal * ((surfacePlane.GetSide(roofSurfaceMidPointLine.anchorInnerPointlist[roofSurfaceMidPointStartingIndex_R])) ? -1 : 1)) * (1.0f - ratioA) + (((roofSurfaceTileRidgeUpPointPos + roofSurfaceTileRidgeDownPointPos) / 2.0f) * ratioA + roofSurfaceMidPointLine.anchorInnerPointlist[roofSurfaceMidPointStartingIndex_R] * (1.0f - ratioA)) * (ratioA);
-			//roofSurfaceTileRidgeMidPointPos = (roofSurfaceMidPointLine.anchorInnerPointlist[roofSurfaceMidPointStartingIndex_R]) * (1.0f - ratioA) + (((roofSurfaceTileRidgeUpPointPos + roofSurfaceTileRidgeDownPointPos) / 2.0f) * ratioA + roofSurfaceMidPointLine.anchorInnerPointlist[roofSurfaceMidPointStartingIndex_R] * (1.0f - ratioA)) * (ratioA);
-			//roofSurfaceTileRidgeMidPointPos = (roofSurfaceMidPointLine.anchorInnerPointlist[roofSurfaceMidPointStartingIndex_R] * ratioC + roofSurfaceTileRidgeDownPointPos * (1.0f - ratioC)) * (1.0f - ratioA) + (((roofSurfaceTileRidgeUpPointPos + roofSurfaceTileRidgeDownPointPos) / 2.0f) * ratioA + roofSurfaceMidPointLine.anchorInnerPointlist[roofSurfaceMidPointStartingIndex_R] * (1.0f - ratioA)) * (ratioA);
-			//roofSurfaceTileRidgeMidPointPos = roofSurfaceTileRidgeMidPointPos + surfacePlane.GetDistanceToPoint(roofSurfaceTileRidgeMidPointPos) * ratioA * surfacePlaneNormal * ((surfacePlane.GetSide(roofSurfaceTileRidgeMidPointPos))?-1:1);
+            //*** 調整(感覺怪怪) 瓦片用脊的中點Y座標，依照比例取半圓取線與切平面焦點位置 + 全屋簷中間點曲線與切平面焦點位置 + 瓦片用脊上下兩點之中點位置
+            //roofSurfaceTileRidgeMidPointPos = roofSurfaceMidPointLine.anchorInnerPointlist[roofSurfaceMidPointStartingIndex_R]* (1.0f - ratioA) + ((roofSurfaceTileRidgeUpPointPos + roofSurfaceTileRidgeDownPointPos) / 2.0f) * ratioA;
+            roofSurfaceTileRidgeMidPointPos.y = (roofSurfaceMidPointLine.anchorInnerPointlist[roofSurfaceMidPointStartingIndex_R].y * (1.0f - ratioA) + roofSurfaceMidPointLineA.anchorInnerPointlist[roofSurfaceMidPointStartingIndex_R_A].y * ratioA) * (1.0f - ratioA) + ((roofSurfaceTileRidgeUpPointPos.y + roofSurfaceTileRidgeDownPointPos.y) / 2.0f) * ratioA;
+            //roofSurfaceTileRidgeMidPointPos = (roofSurfaceMidPointLine.anchorInnerPointlist[roofSurfaceMidPointStartingIndex_R] + surfacePlane.GetDistanceToPoint(roofSurfaceMidPointLine.anchorInnerPointlist[roofSurfaceMidPointStartingIndex_R]) * ratioC * surfacePlaneNormal * ((surfacePlane.GetSide(roofSurfaceMidPointLine.anchorInnerPointlist[roofSurfaceMidPointStartingIndex_R])) ? -1 : 1)) * (1.0f - ratioA) + (((roofSurfaceTileRidgeUpPointPos + roofSurfaceTileRidgeDownPointPos) / 2.0f) * ratioA + roofSurfaceMidPointLine.anchorInnerPointlist[roofSurfaceMidPointStartingIndex_R] * (1.0f - ratioA)) * (ratioA);
+            //roofSurfaceTileRidgeMidPointPos = (roofSurfaceMidPointLine.anchorInnerPointlist[roofSurfaceMidPointStartingIndex_R]) * (1.0f - ratioA) + (((roofSurfaceTileRidgeUpPointPos + roofSurfaceTileRidgeDownPointPos) / 2.0f) * ratioA + roofSurfaceMidPointLine.anchorInnerPointlist[roofSurfaceMidPointStartingIndex_R] * (1.0f - ratioA)) * (ratioA);
+            //roofSurfaceTileRidgeMidPointPos = (roofSurfaceMidPointLine.anchorInnerPointlist[roofSurfaceMidPointStartingIndex_R] * ratioC + roofSurfaceTileRidgeDownPointPos * (1.0f - ratioC)) * (1.0f - ratioA) + (((roofSurfaceTileRidgeUpPointPos + roofSurfaceTileRidgeDownPointPos) / 2.0f) * ratioA + roofSurfaceMidPointLine.anchorInnerPointlist[roofSurfaceMidPointStartingIndex_R] * (1.0f - ratioA)) * (ratioA);
+            //roofSurfaceTileRidgeMidPointPos = roofSurfaceTileRidgeMidPointPos + surfacePlane.GetDistanceToPoint(roofSurfaceTileRidgeMidPointPos) * ratioA * surfacePlaneNormal * ((surfacePlane.GetSide(roofSurfaceTileRidgeMidPointPos))?-1:1);
 
-			ShowPos(roofSurfaceTileRidgeUpPointPos, newLeftRidgeStruct.body, Color.white, 0.8f);
-
+            //觀察用
+            ShowPos(roofSurfaceTileRidgeUpPointPos, newLeftRidgeStruct.body, Color.white, 0.8f);
 			ShowPos(roofSurfaceTileRidgeMidPointPos, newLeftRidgeStruct.body, Color.white, 0.8f);
-
 			ShowPos(roofSurfaceTileRidgeDownPointPos, newLeftRidgeStruct.body, Color.white, 0.8f);
 
-			newRightRidgeStruct.ridgeCatLine.controlPointPosList.Add(roofSurfaceTileRidgeUpPointPos);
+            //設定屋簷表面子瘠，並依照所占屋簷百分比設定點數
+            newRightRidgeStruct.ridgeCatLine.controlPointPosList.Add(roofSurfaceTileRidgeUpPointPos);
 			newRightRidgeStruct.ridgeCatLine.controlPointPosList.Add(roofSurfaceTileRidgeMidPointPos);
 			newRightRidgeStruct.ridgeCatLine.controlPointPosList.Add(roofSurfaceTileRidgeDownPointPos);
 			newRightRidgeStruct.ridgeCatLine.SetLineNumberOfPoints((int)(1000 * (1 - ratioA)));
@@ -1076,8 +1130,8 @@ public class RoofController : Singleton<RoofController>
 			newLeftRidgeStruct.ridgeCatLine.SetLineNumberOfPoints((int)(1000 * (1 - ratioA)));
 			newLeftRidgeStruct.ridgeCatLine.SetCatmullRom(anchorDis, 1);
 
-			/***************************************用AnchorLength取roofSurfaceTileRidge上的瓦片************************************************************/
-			/*
+            /***************************************用AnchorLength取roofSurfaceTileRidge上的瓦片************************************************************/
+            /*
 
 						for (int f = 0; f < newRightRidgeStruct.ridgeCatLine.anchorInnerPointlist.Count; f++)
 						{
@@ -1085,8 +1139,8 @@ public class RoofController : Singleton<RoofController>
 						}
 			*/
 
-			newRightRidgeStruct.tilePosList = newRightRidgeStruct.ridgeCatLine.CalculateAnchorPosByInnerPointList(newRightRidgeStruct.ridgeCatLine.anchorInnerPointlist, newRightRidgeStruct.ridgeCatLine.anchorInnerPointlist.Count - 1, 0, roofSurfaceTileHeight);
-
+            //設定瓦片位置
+            newRightRidgeStruct.tilePosList = newRightRidgeStruct.ridgeCatLine.CalculateAnchorPosByInnerPointList(newRightRidgeStruct.ridgeCatLine.anchorInnerPointlist, newRightRidgeStruct.ridgeCatLine.anchorInnerPointlist.Count - 1, 0, roofSurfaceTileHeight);
 			newLeftRidgeStruct.tilePosList = newLeftRidgeStruct.ridgeCatLine.CalculateAnchorPosByInnerPointList(newLeftRidgeStruct.ridgeCatLine.anchorInnerPointlist, newLeftRidgeStruct.ridgeCatLine.anchorInnerPointlist.Count - 1, 0, roofSurfaceTileHeight);
 
 			/*	for (int f = 0; f < newLeftRidgeStruct.tilePosList.Count; f++)

@@ -219,7 +219,7 @@ public class MainController : Singleton<MainController>
 		mesh.triangles = triangles;
 
 		mesh.RecalculateBounds();
-		mesh.Optimize();
+		;
 
 		return controlPointPosList;
 	}
@@ -367,7 +367,7 @@ public class MainController : Singleton<MainController>
 		mesh.triangles = triangles;
 
 		mesh.RecalculateBounds();
-		mesh.Optimize();
+		;
 
 		return controlPointPosList;
 
@@ -724,7 +724,7 @@ public class MainController : Singleton<MainController>
 		mesh.triangles = triangles;
 
 		mesh.RecalculateBounds();
-		mesh.Optimize();
+		;
 	}
 	public void CreateStairMesh(Vector3 centerPos, float width, float height, float length, float rotateAngle, MeshFilter meshFilter)
 	{
@@ -855,7 +855,7 @@ public class MainController : Singleton<MainController>
 		mesh.triangles = triangles;
 
 		mesh.RecalculateBounds();
-		mesh.Optimize();
+		;
 	}
 	public List<Vector3> CreateRegularCurveRingMesh(Vector3 centerPos, List<Vector3> localPosList, Vector3 axis, int nbSides, int segmentation, float rotateAngle, MeshFilter meshFilter)
 	{
@@ -978,7 +978,7 @@ public class MainController : Singleton<MainController>
 		mesh.triangles = triangles;
 
 		mesh.RecalculateBounds();
-		mesh.Optimize();
+		;
 
 		return controlPointPosList;
 	}

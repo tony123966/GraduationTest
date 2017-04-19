@@ -434,7 +434,7 @@ public class CylinderMesh : MonoBehaviour
 		mesh.triangles = triangles;
 
 		mesh.RecalculateBounds();
-		mesh.Optimize();
+		;
 		//transform.up = Vector3.Normalize(topPos - bottomPos);
 		//transform.rotation = Quaternion.Euler(topPos - bottomPos);
 		transform.RotateAround(bottomPos, topPos - bottomPos, Vector3.Angle(Vector3.up,topPos - bottomPos));

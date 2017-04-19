@@ -113,7 +113,7 @@ public class BodyController : Singleton<BodyController>
 	{
 
 	}
-	private CylinderMesh CreateColumn(Vector3 pos, float topRadius, float downRadius, float height, string name = "Column")
+	private CylinderMesh CreateColumn(Vector3 pos, float topRadius, float downRadius,float height, string name = "Column")
 	{
 		GameObject col = new GameObject(name);
 		col.transform.position = pos;
@@ -189,7 +189,7 @@ public class BodyController : Singleton<BodyController>
 				meshRenderer.material.color = Color.white;
 				float rotateAngle = (Vector3.Dot(Vector3.forward, dir) < 0 ? Vector3.Angle(dir, Vector3.right) : 180 - Vector3.Angle(dir, Vector3.right));
 				Vector3 pos = dir.normalized * (width / 2.0f + j * width + eaveColumnDownRadius) + goldColumnList[i].pos;
-				MainController.Instance.CreateTorusMesh(pos, width, eaveColumnHeight, 1, 0.3f, 0.3f, 0.6f, 1.0f, rotateAngle, meshFilter);
+				MainController.Instance.CreateWallMesh(pos, width, eaveColumnHeight, 1, 0.3f, 0.3f, 0.6f, 1.0f, rotateAngle, meshFilter);
 			}
 
 			//CreateWindowModel

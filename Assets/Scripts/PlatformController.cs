@@ -20,6 +20,7 @@ public class PlatformController : Singleton<PlatformController>
 	public List<Vector3> bottomPointPosList;
 
 	public bool isCurvePlatform = true;
+	public bool isStair = false;
 	//***********************************************************************
 
 	public void InitFunction()
@@ -29,10 +30,15 @@ public class PlatformController : Singleton<PlatformController>
 		platform.transform.parent = MainController.Instance.building.transform;
 		//***********************************************************************
 		CreatePlatform(platformCenter);
-		if (!isCurvePlatform) CreateStair(0, platformFrontWidth * 0.8f, platformHeight, platformFrontWidth * 0.1f);
-
-		topPointPosList.Reverse();
-		bottomPointPosList.Reverse();
+		if (isStair) 
+		{
+			for (int i = 0; i < topPointPosList.Count; i++)
+			{
+				CreateStair(i, platformFrontWidth * 0.8f, platformHeight, platformFrontWidth * 0.1f);
+			}
+		}
+		MainController.Instance.ShowPos(topPointPosList[0]+Vector3.up,platform,Color.blue);
+		MainController.Instance.ShowPos(topPointPosList[topPointPosList.Count-1] + Vector3.up, platform, Color.yellow);
 	}
 	public void CreatePlatform(Vector3 pos)
 	{
@@ -66,7 +72,7 @@ public class PlatformController : Singleton<PlatformController>
 		{
 			if (MainController.Instance.sides == MainController.FormFactorSideType.FourSide)
 			{
-				controlPointPosList = MainController.Instance.CreateCubeMesh(pos, platformFrontWidth, platformHeight, platformFrontLength, 0, meshFilter);
+				controlPointPosList = MainController.Instance.CreateCubeMesh(pos, platformFrontWidth, platformHeight, platformFrontLength, -90, meshFilter);
 			}
 			else
 			{
@@ -95,8 +101,8 @@ public class PlatformController : Singleton<PlatformController>
 		Vector3 pos = (topPointPosList[index] + topPointPosList[(index + 1) % topPointPosList.Count]) / 2.0f;
 		pos += dir * length / 2.0f;
 		pos.y = (topPointPosList[index].y + bottomPointPosList[index].y) / 2.0f;
-		float rotateAngle = (Vector3.Dot(Vector3.right, dir) < 0 ? Vector3.Angle(dir, Vector3.forward) : 180 - Vector3.Angle(dir, Vector3.forward));
-		MainController.Instance.CreateStairMesh(pos, width, height, length, rotateAngle, meshFilter);
+		float rotateAngle = (Vector3.Dot(Vector3.right, dir) > 0 ?1:-1)* Vector3.Angle(dir, Vector3.forward);
 
+		MainController.Instance.CreateStairMesh(pos, width, height, length, rotateAngle, meshFilter);
 	}
 }

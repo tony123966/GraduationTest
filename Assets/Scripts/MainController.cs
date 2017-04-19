@@ -41,8 +41,20 @@ public class MainController : Singleton<MainController>
 		BodyController.Instance.InitFunction();
 		RoofController.Instance.InitFunction();
 
-		ShowPos(PlatformController.Instance.topPointPosList[0], building,Color.blue);
-		ShowPos(PlatformController.Instance.topPointPosList[PlatformController.Instance.topPointPosList.Count-1], building, Color.yellow);
+		ShowPos(PlatformController.Instance.topPointPosList[0], building, Color.blue, 0.5f);
+		ShowPos(PlatformController.Instance.topPointPosList[PlatformController.Instance.topPointPosList.Count - 1], building, Color.yellow, 0.5f);
+
+		ShowPos(BodyController.Instance.goldColumnList[0].transform.position, building, Color.blue, 2.0f);
+		ShowPos(BodyController.Instance.goldColumnList[BodyController.Instance.goldColumnList.Count - 1].transform.position, building, Color.yellow, 2.0f);
+
+
+		GameObject wall = new GameObject("ZZZ");
+		MeshFilter meshFilter = wall.AddComponent<MeshFilter>();
+		MeshRenderer meshRenderer = wall.AddComponent<MeshRenderer>();
+		wall.transform.parent = building.transform;
+		meshRenderer.material.color = Color.white;
+		MainController.Instance.CreateTorusMesh(new Vector3(10, 0, 10), 3, 10,20, 10,45, meshFilter);
+
 	}
 
 	public float DistancePointLine(Vector3 point, Vector3 lineStart, Vector3 dir)
@@ -64,7 +76,7 @@ public class MainController : Singleton<MainController>
 				return (lineStart + ((Vector3)(lhs * num2)));*/
 		return Vector3.Project((point - lineStart), dir) + lineStart;
 	}
-	void ShowPos(Vector3 pos, GameObject parent, Color color, float localScale = 0.2f)
+	public void ShowPos(Vector3 pos, GameObject parent, Color color, float localScale = 0.2f)
 	{
 		GameObject obj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
 		obj.transform.position = pos;
@@ -573,7 +585,7 @@ public class MainController : Singleton<MainController>
 		#endregion
 
 	}
-	public void CreateTorusMesh(Vector3 centerPos, float width, float height, float length, float innerWidthRatio, float innerHeightDownRatio, float innerHeightTopRatio, float innerLengthRatio, float rotateAngle, MeshFilter meshFilter)
+	public void CreateWallMesh(Vector3 centerPos, float width, float height, float length, float innerWidthRatio, float innerHeightDownRatio, float innerHeightTopRatio, float innerLengthRatio, float rotateAngle, MeshFilter meshFilter)
 	{
 		int nbSides = 4;
 
@@ -889,7 +901,7 @@ public class MainController : Singleton<MainController>
 		{
 			float radius = DistancePointLine(curve.anchorInnerPointlist[i], centerPos, axis);
 			Vector3 radiusCenterPos = ProjectPointLine(curve.anchorInnerPointlist[i], centerPos, axis) + centerPos;
-	
+
 			pList[vert++] = radiusCenterPos;
 			for (int j = 0; j < nbSides; j++)
 			{
@@ -981,5 +993,259 @@ public class MainController : Singleton<MainController>
 		mesh.Optimize();
 
 		return controlPointPosList;
+	}
+	public void CreateTorusMesh(Vector3 centerPos, int nbSides,float innerRadius,float outterRadius, float height, float rotateAngle,MeshFilter meshFilter)
+	{
+
+		Mesh mesh = new Mesh();
+		meshFilter.mesh = mesh;
+		mesh.Clear();
+
+		// Outter shell is at radius1 + radius2 / 2, inner shell at radius1 - radius2 / 2
+		float bottomRadius1 = outterRadius;
+		float bottomRadius2 = innerRadius;
+		float topRadius1 = outterRadius;
+		float topRadius2 = innerRadius;
+
+		int nbVerticesCap = nbSides * 2 + 2;
+		int nbVerticesSides = nbSides * 2 + 2;
+		#region Vertices
+
+		// bottom + top + sides
+		Vector3[] vertices = new Vector3[nbVerticesCap * 2 + nbVerticesSides * 2];
+		int vert = 0;
+		float _2pi = Mathf.PI * 2f;
+
+		// Bottom cap
+		int sideCounter = 0;
+		while (vert < nbVerticesCap)
+		{
+			sideCounter = sideCounter == nbSides ? 0 : sideCounter;
+
+			float r1 = (float)(sideCounter++) / nbSides * _2pi;
+			float cos = Mathf.Cos(r1);
+			float sin = Mathf.Sin(r1);
+			vertices[vert] = Quaternion.AngleAxis(rotateAngle, Vector3.up) * new Vector3(cos * (bottomRadius1 - bottomRadius2 * .5f), 0f, sin * (bottomRadius1 - bottomRadius2 * .5f)) + centerPos;
+			vertices[vert + 1] = Quaternion.AngleAxis(rotateAngle, Vector3.up) * new Vector3(cos * (bottomRadius1 + bottomRadius2 * .5f), 0f, sin * (bottomRadius1 + bottomRadius2 * .5f)) + centerPos;
+			vert += 2;
+		}
+
+		// Top cap
+		sideCounter = 0;
+		while (vert < nbVerticesCap * 2)
+		{
+			sideCounter = sideCounter == nbSides ? 0 : sideCounter;
+
+			float r1 = (float)(sideCounter++) / nbSides * _2pi;
+			float cos = Mathf.Cos(r1);
+			float sin = Mathf.Sin(r1);
+			vertices[vert] = Quaternion.AngleAxis(rotateAngle, Vector3.up) * new Vector3(cos * (topRadius1 - topRadius2 * .5f), height, sin * (topRadius1 - topRadius2 * .5f)) + centerPos;
+			vertices[vert + 1] = Quaternion.AngleAxis(rotateAngle, Vector3.up) * new Vector3(cos * (topRadius1 + topRadius2 * .5f), height, sin * (topRadius1 + topRadius2 * .5f)) + centerPos;
+			vert += 2;
+		}
+
+		// Sides (out)
+		sideCounter = 0;
+		while (vert < nbVerticesCap * 2 + nbVerticesSides)
+		{
+			sideCounter = sideCounter == nbSides ? 0 : sideCounter;
+
+			float r1 = (float)(sideCounter++) / nbSides * _2pi;
+			float cos = Mathf.Cos(r1);
+			float sin = Mathf.Sin(r1);
+
+			vertices[vert] = Quaternion.AngleAxis(rotateAngle, Vector3.up) * new Vector3(cos * (topRadius1 + topRadius2 * .5f), height, sin * (topRadius1 + topRadius2 * .5f)) + centerPos;
+			vertices[vert + 1] = Quaternion.AngleAxis(rotateAngle, Vector3.up) * new Vector3(cos * (bottomRadius1 + bottomRadius2 * .5f), 0, sin * (bottomRadius1 + bottomRadius2 * .5f)) + centerPos;
+			vert += 2;
+		}
+
+		// Sides (in)
+		sideCounter = 0;
+		while (vert < vertices.Length)
+		{
+			sideCounter = sideCounter == nbSides ? 0 : sideCounter;
+
+			float r1 = (float)(sideCounter++) / nbSides * _2pi;
+			float cos = Mathf.Cos(r1);
+			float sin = Mathf.Sin(r1);
+
+			vertices[vert] = Quaternion.AngleAxis(rotateAngle, Vector3.up) * new Vector3(cos * (topRadius1 - topRadius2 * .5f), height, sin * (topRadius1 - topRadius2 * .5f)) + centerPos;
+			vertices[vert + 1] = Quaternion.AngleAxis(rotateAngle, Vector3.up) * new Vector3(cos * (bottomRadius1 - bottomRadius2 * .5f), 0, sin * (bottomRadius1 - bottomRadius2 * .5f)) + centerPos;
+			vert += 2;
+		}
+		#endregion
+
+		#region Normales
+
+		// bottom + top + sides
+		Vector3[] normales = new Vector3[vertices.Length];
+		vert = 0;
+
+		// Bottom cap
+		while (vert < nbVerticesCap)
+		{
+			normales[vert++] = Quaternion.AngleAxis(rotateAngle, Vector3.up) * Vector3.down;
+		}
+
+		// Top cap
+		while (vert < nbVerticesCap * 2)
+		{
+			normales[vert++] = Quaternion.AngleAxis(rotateAngle, Vector3.up) * Vector3.up;
+		}
+
+		// Sides (out)
+		sideCounter = 0;
+		while (vert < nbVerticesCap * 2 + nbVerticesSides)
+		{
+			sideCounter = sideCounter == nbSides ? 0 : sideCounter;
+
+			float r1 = (float)(sideCounter++) / nbSides * _2pi;
+
+			normales[vert] = Quaternion.AngleAxis(rotateAngle, Vector3.up) * new Vector3(Mathf.Cos(r1), 0f, Mathf.Sin(r1));
+			normales[vert + 1] = normales[vert];
+			vert += 2;
+		}
+
+		// Sides (in)
+		sideCounter = 0;
+		while (vert < vertices.Length)
+		{
+			sideCounter = sideCounter == nbSides ? 0 : sideCounter;
+
+			float r1 = (float)(sideCounter++) / nbSides * _2pi;
+
+			normales[vert] = Quaternion.AngleAxis(rotateAngle, Vector3.up) * -(new Vector3(Mathf.Cos(r1), 0f, Mathf.Sin(r1)));
+			normales[vert + 1] = normales[vert];
+			vert += 2;
+		}
+		#endregion
+
+		#region UVs
+		Vector2[] uvs = new Vector2[vertices.Length];
+
+		vert = 0;
+		// Bottom cap
+		sideCounter = 0;
+		while (vert < nbVerticesCap)
+		{
+			float t = (float)(sideCounter++) / nbSides;
+			uvs[vert++] = new Vector2(0f, t);
+			uvs[vert++] = new Vector2(1f, t);
+		}
+
+		// Top cap
+		sideCounter = 0;
+		while (vert < nbVerticesCap * 2)
+		{
+			float t = (float)(sideCounter++) / nbSides;
+			uvs[vert++] = new Vector2(0f, t);
+			uvs[vert++] = new Vector2(1f, t);
+		}
+
+		// Sides (out)
+		sideCounter = 0;
+		while (vert < nbVerticesCap * 2 + nbVerticesSides)
+		{
+			float t = (float)(sideCounter++) / nbSides;
+			uvs[vert++] = new Vector2(t, 0f);
+			uvs[vert++] = new Vector2(t, 1f);
+		}
+
+		// Sides (in)
+		sideCounter = 0;
+		while (vert < vertices.Length)
+		{
+			float t = (float)(sideCounter++) / nbSides;
+			uvs[vert++] = new Vector2(t, 0f);
+			uvs[vert++] = new Vector2(t, 1f);
+		}
+		#endregion
+
+		#region Triangles
+		int nbFace = nbSides * 4;
+		int nbTriangles = nbFace * 2;
+		int nbIndexes = nbTriangles * 3;
+		int[] triangles = new int[nbIndexes];
+
+		// Bottom cap
+		int i = 0;
+		sideCounter = 0;
+		while (sideCounter < nbSides)
+		{
+			int current = sideCounter * 2;
+			int next = sideCounter * 2 + 2;
+
+			triangles[i++] = next + 1;
+			triangles[i++] = next;
+			triangles[i++] = current;
+
+			triangles[i++] = current + 1;
+			triangles[i++] = next + 1;
+			triangles[i++] = current;
+
+			sideCounter++;
+		}
+
+		// Top cap
+		while (sideCounter < nbSides * 2)
+		{
+			int current = sideCounter * 2 + 2;
+			int next = sideCounter * 2 + 4;
+
+			triangles[i++] = current;
+			triangles[i++] = next;
+			triangles[i++] = next + 1;
+
+			triangles[i++] = current;
+			triangles[i++] = next + 1;
+			triangles[i++] = current + 1;
+
+			sideCounter++;
+		}
+
+		// Sides (out)
+		while (sideCounter < nbSides * 3)
+		{
+			int current = sideCounter * 2 + 4;
+			int next = sideCounter * 2 + 6;
+
+			triangles[i++] = current;
+			triangles[i++] = next;
+			triangles[i++] = next + 1;
+
+			triangles[i++] = current;
+			triangles[i++] = next + 1;
+			triangles[i++] = current + 1;
+
+			sideCounter++;
+		}
+
+
+		// Sides (in)
+		while (sideCounter < nbSides * 4)
+		{
+			int current = sideCounter * 2 + 6;
+			int next = sideCounter * 2 + 8;
+
+			triangles[i++] = next + 1;
+			triangles[i++] = next;
+			triangles[i++] = current;
+
+			triangles[i++] = current + 1;
+			triangles[i++] = next + 1;
+			triangles[i++] = current;
+
+			sideCounter++;
+		}
+		#endregion
+
+		mesh.vertices = vertices;
+		mesh.normals = normales;
+		mesh.uv = uvs;
+		mesh.triangles = triangles;
+
+		mesh.RecalculateBounds();
+		mesh.Optimize();
+
 	}
 }

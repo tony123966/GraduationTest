@@ -143,8 +143,6 @@ public class Building : EditorWindow
        // BallGrouping GP = (BallGrouping)GameObject.Find("GroupingGraph").gameObject.GetComponent(typeof(BallGrouping));
        // GP.MeasureDis();
        // GP.DrawGrouping();
-	  Destroy(MainController.Instance.building);
-	   MainController.Instance.InitFunction();
     }
 
     void SetPositino(Vector3 cuePos,Vector3 obPos)

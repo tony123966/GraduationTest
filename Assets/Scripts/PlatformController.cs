@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-public class PlatformController : Singleton<PlatformController>
+public class PlatformController:MonoBehaviour
 {
 
 	public GameObject platform = null;
@@ -9,25 +9,30 @@ public class PlatformController : Singleton<PlatformController>
 	//Platform**************************************************************************
 	public enum PlatformType { };
 
-	public float platformFrontWidth = 10;
-	public float platformFrontLength = 30;
+	public float platformFrontWidth = 30;
+	public float platformFrontLength = 40;
 
 	public float platformHeight = 5;
 
-	public Vector3 platformCenter = Vector3.zero;
+	public Vector3 platformCenter;
 	//**********************************************************************************
-	public List<Vector3> topPointPosList;
-	public List<Vector3> bottomPointPosList;
+	[HideInInspector]
+	public List<Vector3> topPointPosList = new List<Vector3>();
+	[HideInInspector]
+	public List<Vector3> bottomPointPosList=new List<Vector3>();
 
 	public bool isCurvePlatform = true;
-	public bool isStair = false;
+	public bool isStair = true;
 	//***********************************************************************
 
-	public void InitFunction()
+	public void InitFunction(GameObject parent, Vector3 platformCenter)
 	{
+
+		this.platformCenter = platformCenter;
+
 		platform = new GameObject("Platform");
 		platform.transform.position = platformCenter;
-		platform.transform.parent = MainController.Instance.building.transform;
+		platform.transform.parent = parent.transform;
 		//***********************************************************************
 		CreatePlatform(platformCenter);
 		if (isStair) 
@@ -37,8 +42,6 @@ public class PlatformController : Singleton<PlatformController>
 				CreateStair(i, platformFrontWidth * 0.8f, platformHeight, platformFrontWidth * 0.1f);
 			}
 		}
-		MainController.Instance.ShowPos(topPointPosList[0]+Vector3.up,platform,Color.blue);
-		MainController.Instance.ShowPos(topPointPosList[topPointPosList.Count-1] + Vector3.up, platform, Color.yellow);
 	}
 	public void CreatePlatform(Vector3 pos)
 	{
@@ -59,13 +62,12 @@ public class PlatformController : Singleton<PlatformController>
 
 		if (isCurvePlatform)
 		{
-			Vector3 centerPos = Vector3.zero;
 			List<Vector3> localPosList = new List<Vector3>();
 			localPosList.Add(new Vector3(15, 2, 15));
 			localPosList.Add(new Vector3(16, 0, 16));
 			localPosList.Add(new Vector3(13, -3, 13));
 			localPosList.Add(new Vector3(18, -8, 18));
-			controlPointPosList = MainController.Instance.CreateRegularCurveRingMesh(centerPos, localPosList, Vector3.up, (int)MainController.Instance.sides, 100, 360.0f / (int)MainController.Instance.sides / 2, meshFilter);
+			controlPointPosList = MainController.Instance.CreateRegularCurveRingMesh(pos, localPosList, Vector3.up, (int)MainController.Instance.sides, 100, 360.0f / (int)MainController.Instance.sides / 2, meshFilter);
 			platformHeight = Mathf.Abs(localPosList[0].y - localPosList[localPosList.Count - 1].y);
 		}
 		else

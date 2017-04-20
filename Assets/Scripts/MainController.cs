@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-struct ModelStruct//模型旋轉、縮放
+public struct ModelStruct//模型旋轉、縮放
 {
 	public GameObject model;
 	public Vector3 rotation;
@@ -14,17 +14,39 @@ struct ModelStruct//模型旋轉、縮放
 		this.scale = scale;
 	}
 }
+public struct BuildingStruct
+{
+	GameObject building;
+	public PlatformController platformController;
+	public BodyController bodyController ;
+	public RoofController roofController;
+
+	public BuildingStruct(Vector3 buildingBottomCenter)
+	{
+		building = new GameObject("Building");
+		building.transform.position = buildingBottomCenter;
+
+		platformController = new PlatformController();
+		platformController.InitFunction(building, buildingBottomCenter);
+
+		bodyController = new BodyController();
+		bodyController.InitFunction(building, platformController);
+
+		roofController = new RoofController();
+		roofController.InitFunction(building,  platformController,  bodyController);
+	}
+}
 public class MainController : Singleton<MainController>
 {
-	public Vector3 buildingCenter = Vector3.zero;
-	public GameObject building;
-
+	public List<BuildingStruct> buildingLevelList;
+	public Vector3 buildingCenter;
 	//FormFactor***********************************************************************
 	public enum FormFactorSideType { ThreeSide = 3, FourSide = 4, FiveSide = 5, SixSide = 6, EightSide = 8 };
 	public FormFactorSideType sides = FormFactorSideType.ThreeSide;
 	//**********************************************************************************
-
-
+	//**********************************************************************************
+	public float friezeWidth;//裝飾物長度
+	public float balustradeWidth;//欄杆長度
 	// Use this for initialization
 
 	private void Awake()
@@ -34,38 +56,28 @@ public class MainController : Singleton<MainController>
 	public void InitFunction()
 	{
 
-		building = new GameObject("Building");
-		building.transform.position = buildingCenter;
+		//**************************************************************************************
+		GameObject clone = Instantiate(ModelController.Instance.eaveColumnModelStruct.friezeModelStruct.model, Vector3.zero, ModelController.Instance.eaveColumnModelStruct.friezeModelStruct.model.transform.rotation) as GameObject;
+		friezeWidth = clone.GetComponentInChildren<MeshRenderer>().bounds.size.z * ModelController.Instance.eaveColumnModelStruct.friezeModelStruct.scale.z;//裝飾物長度
+		Destroy(clone);
+		clone = Instantiate(ModelController.Instance.eaveColumnModelStruct.balustradeModelStruct.model, Vector3.zero, ModelController.Instance.eaveColumnModelStruct.balustradeModelStruct.model.transform.rotation) as GameObject;
+		balustradeWidth = clone.GetComponentInChildren<MeshRenderer>().bounds.size.z * ModelController.Instance.eaveColumnModelStruct.balustradeModelStruct.scale.z;//欄杆長度
+		Destroy(clone);
+		//**************************************************************************************
+		buildingLevelList = new List<BuildingStruct>();
 
-		PlatformController.Instance.InitFunction();
-		BodyController.Instance.InitFunction();
-		RoofController.Instance.InitFunction();
-
-		ShowPos(PlatformController.Instance.topPointPosList[0], building, Color.blue, 0.5f);
-		ShowPos(PlatformController.Instance.topPointPosList[PlatformController.Instance.topPointPosList.Count - 1], building, Color.yellow, 0.5f);
-
-		ShowPos(BodyController.Instance.goldColumnList[0].transform.position, building, Color.blue, 2.0f);
-		ShowPos(BodyController.Instance.goldColumnList[BodyController.Instance.goldColumnList.Count - 1].transform.position, building, Color.yellow, 2.0f);
-
+		BuildingStruct newBuildingStruct = new BuildingStruct(buildingCenter);
+		buildingLevelList.Add(newBuildingStruct);
+		BuildingStruct newBuildingStructA = new BuildingStruct(newBuildingStruct.roofController.roofTopCenter);
+		buildingLevelList.Add(newBuildingStructA);
+	
 	}
-
-	public float DistancePointLine(Vector3 point, Vector3 lineStart, Vector3 dir)
+	public float DistancePoint2Line(Vector3 point, Vector3 lineStart, Vector3 dir)
 	{
-		return Vector3.Magnitude(ProjectPointLine(point, lineStart, dir) - point);
+		return Vector3.Magnitude(ProjectPoint2Line(point, lineStart, dir) - point);
 	}
-	public Vector3 ProjectPointLine(Vector3 point, Vector3 lineStart, Vector3 dir)
+	public Vector3 ProjectPoint2Line(Vector3 point, Vector3 lineStart, Vector3 dir)
 	{
-		/*
-				Vector3 rhs = point - lineStart;
-				Vector3 vector2 = dir;
-				float magnitude = vector2.magnitude;
-				Vector3 lhs = vector2;
-				if (magnitude > 1E-06f)
-				{
-					lhs = (Vector3)(lhs / magnitude);
-				}
-				float num2 = Mathf.Clamp(Vector3.Dot(lhs, rhs), 0f, magnitude);
-				return (lineStart + ((Vector3)(lhs * num2)));*/
 		return Vector3.Project((point - lineStart), dir) + lineStart;
 	}
 	public void ShowPos(Vector3 pos, GameObject parent, Color color, float localScale = 0.2f)
@@ -891,8 +903,8 @@ public class MainController : Singleton<MainController>
 		int vert = 0;
 		for (int i = 0; i < curve.anchorInnerPointlist.Count; i++)
 		{
-			float radius = DistancePointLine(curve.anchorInnerPointlist[i], centerPos, axis);
-			Vector3 radiusCenterPos = ProjectPointLine(curve.anchorInnerPointlist[i], centerPos, axis) + centerPos;
+			float radius = DistancePoint2Line(curve.anchorInnerPointlist[i], centerPos, axis);
+			Vector3 radiusCenterPos = ProjectPoint2Line(curve.anchorInnerPointlist[i], centerPos, axis) + centerPos;
 
 			pList[vert++] = radiusCenterPos;
 			for (int j = 0; j < nbSides; j++)
@@ -901,7 +913,6 @@ public class MainController : Singleton<MainController>
 				Vector3 pos = Quaternion.AngleAxis(rotateAngle, Vector3.up) * (new Vector3(Mathf.Cos(rad) * radius, 0f, Mathf.Sin(rad) * radius) + radiusCenterPos);
 				pList[vert++] = pos;
 				controlPointPosList.Add(pos);
-				ShowPos(pos, building, Color.red, 0.8f);
 			}
 		}
 		#region Vertices

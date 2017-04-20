@@ -47,14 +47,6 @@ public class MainController : Singleton<MainController>
 		ShowPos(BodyController.Instance.goldColumnList[0].transform.position, building, Color.blue, 2.0f);
 		ShowPos(BodyController.Instance.goldColumnList[BodyController.Instance.goldColumnList.Count - 1].transform.position, building, Color.yellow, 2.0f);
 
-
-		GameObject wall = new GameObject("ZZZ");
-		MeshFilter meshFilter = wall.AddComponent<MeshFilter>();
-		MeshRenderer meshRenderer = wall.AddComponent<MeshRenderer>();
-		wall.transform.parent = building.transform;
-		meshRenderer.material.color = Color.white;
-		MainController.Instance.CreateTorusMesh(new Vector3(10, 0, 10), 3, 10,20, 10,45, meshFilter);
-
 	}
 
 	public float DistancePointLine(Vector3 point, Vector3 lineStart, Vector3 dir)

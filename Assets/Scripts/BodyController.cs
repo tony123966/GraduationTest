@@ -37,9 +37,11 @@ public class BodyController : Singleton<BodyController>
 	public int goldColumnbayNumber = 3;//間數量
 	public int eaveColumnbayNumber = 5;
 	public float eaveColumnHeight;
+	public float columnFundationHeight;//柱礎高度
 
 	public float eaveColumnTopRadius = 1f;
 	public float eaveColumnDownRadius = 1f;
+	public float columnFundationRadius;
 	public Vector3 bodyCenter;
 
 	//**********************************************************************************
@@ -71,6 +73,9 @@ public class BodyController : Singleton<BodyController>
 		//初始值******************************************************************************
 
 		eaveColumnHeight = eaveColumnDownRadius * 11;
+		columnFundationHeight = eaveColumnHeight * 0.05f;
+
+		columnFundationRadius=eaveColumnTopRadius*1.2f;
 
 		eaveColumnRatio2platformOffset = (PlatformController.Instance.platformFrontWidth * 0.1f);
 		goldColumnRatio2platformOffset = eaveColumnRatio2platformOffset * 2.5f;
@@ -136,39 +141,54 @@ public class BodyController : Singleton<BodyController>
 	{
 		eaveColumnList.Clear();
 		goldColumnList.Clear();
+
+		float columnRemainHeight = eaveColumnHeight - columnFundationHeight;
+
 		for (int i = 0; i < PlatformController.Instance.topPointPosList.Count; i++)
 		{
 			Vector2 v = new Vector2(PlatformController.Instance.topPointPosList[i].x - PlatformController.Instance.platformCenter.x, PlatformController.Instance.topPointPosList[i].z - PlatformController.Instance.platformCenter.z);
 			//eaveColumn
 			v = v.normalized * eaveColumnRatio2platformOffset;
-			Vector3 pos = PlatformController.Instance.topPointPosList[i] - new Vector3(v.x, 0, v.y) + new Vector3(0, eaveColumnHeight / 2.0f, 0);
-			CylinderMesh newColumn = CreateColumn(pos, eaveColumnTopRadius, eaveColumnDownRadius, eaveColumnHeight, "EaveColumn");
+			Vector3 eaveColumnPos = PlatformController.Instance.topPointPosList[i] - new Vector3(v.x, 0, v.y) + new Vector3(0, columnRemainHeight / 2.0f + columnFundationHeight, 0);
+			CylinderMesh newColumn = CreateColumn(eaveColumnPos, eaveColumnTopRadius, eaveColumnDownRadius, columnRemainHeight, "EaveColumn");
 			eaveColumnList.Add(newColumn);
 
-			//eaveColumn_Bay
+			//eaveColumnFundation
+			Vector3 columnFundationPos = eaveColumnPos - new Vector3(0, eaveColumnHeight / 2.0f, 0);
+			CreateColumn(columnFundationPos, columnFundationRadius, columnFundationRadius, columnFundationHeight, "EaveColumnFundation");
+
+			//eaveBayColumn
 			int nextIndex = (i + 1) % PlatformController.Instance.topPointPosList.Count;
 			Vector2 vNext = new Vector2(PlatformController.Instance.topPointPosList[nextIndex].x - PlatformController.Instance.platformCenter.x, PlatformController.Instance.topPointPosList[nextIndex].z - PlatformController.Instance.platformCenter.z);
 			vNext = vNext.normalized * eaveColumnRatio2platformOffset;
-			Vector3 posNext = PlatformController.Instance.topPointPosList[nextIndex] - new Vector3(vNext.x, 0, vNext.y) + new Vector3(0, eaveColumnHeight / 2.0f, 0);
+			Vector3 posNext = PlatformController.Instance.topPointPosList[nextIndex] - new Vector3(vNext.x, 0, vNext.y) + new Vector3(0, columnRemainHeight / 2.0f + columnFundationHeight, 0);
 
-			float disBetweenEaveColumn = Vector3.Distance(pos, posNext);
+			float disBetweenEaveColumn = Vector3.Distance(eaveColumnPos, posNext);
 			float bayWidth = disBetweenEaveColumn / eaveColumnbayNumber;
-			Vector3 bayDir = posNext - pos;
+			Vector3 bayDir = posNext - eaveColumnPos;
 
 			for (int j = 1; j < eaveColumnbayNumber; j++)
 			{
-				Vector3 posT = bayDir.normalized * (j * bayWidth) + pos;
-				CylinderMesh newColumnT = CreateColumn(posT, eaveColumnTopRadius, eaveColumnDownRadius, eaveColumnHeight, "EaveBayColumn");
+				Vector3 eaveBayColumnPos = bayDir.normalized * (j * bayWidth) + eaveColumnPos;
+				CylinderMesh newColumnT = CreateColumn(eaveBayColumnPos, eaveColumnTopRadius, eaveColumnDownRadius, columnRemainHeight, "EaveBayColumn");
 				eaveColumnList.Add(newColumnT);
+
+				//eaveBayColumnFundation
+				columnFundationPos = eaveBayColumnPos - new Vector3(0, eaveColumnHeight/ 2.0f, 0);
+				CreateColumn(columnFundationPos, columnFundationRadius, columnFundationRadius, columnFundationHeight, "EaveBayColumnFundation");
 			}
 
 
 			//goldColumn
 			v = new Vector2(PlatformController.Instance.topPointPosList[i].x - PlatformController.Instance.platformCenter.x, PlatformController.Instance.topPointPosList[i].z - PlatformController.Instance.platformCenter.z);
 			v = v.normalized * goldColumnRatio2platformOffset;
-			Vector3 posZ = PlatformController.Instance.topPointPosList[i] - new Vector3(v.x, 0, v.y) + new Vector3(0, eaveColumnHeight / 2.0f, 0);
-			CylinderMesh newColumnZ = CreateColumn(posZ, eaveColumnTopRadius, eaveColumnDownRadius, eaveColumnHeight, "GoldColumn");
+			Vector3 goldColumnPos = PlatformController.Instance.topPointPosList[i] - new Vector3(v.x, 0, v.y) + new Vector3(0, columnRemainHeight / 2.0f + columnFundationHeight, 0);
+			CylinderMesh newColumnZ = CreateColumn(goldColumnPos, eaveColumnTopRadius, eaveColumnDownRadius, columnRemainHeight, "GoldColumn");
 			goldColumnList.Add(newColumnZ);
+			//goldColumnFundation
+			columnFundationPos = goldColumnPos - new Vector3(0, eaveColumnHeight / 2.0f, 0);
+			CreateColumn(columnFundationPos, columnFundationRadius, columnFundationRadius, columnFundationHeight, "GoldColumnFundation");
+
 		}
 
 
@@ -188,7 +208,8 @@ public class BodyController : Singleton<BodyController>
 				wall.transform.parent = body.transform;
 				meshRenderer.material.color = Color.white;
 				float rotateAngle = (Vector3.Dot(Vector3.forward, dir) < 0 ? Vector3.Angle(dir, Vector3.right) : 180 - Vector3.Angle(dir, Vector3.right));
-				Vector3 pos = dir.normalized * (width / 2.0f + j * width + eaveColumnDownRadius) + goldColumnList[i].pos;
+			
+				Vector3 pos = dir.normalized * (width / 2.0f + j * width + eaveColumnDownRadius) + goldColumnList[i].pos-columnFundationHeight*Vector3.up;
 				MainController.Instance.CreateWallMesh(pos, width, eaveColumnHeight, 1, 0.3f, 0.3f, 0.6f, 1.0f, rotateAngle, meshFilter);
 			}
 
@@ -214,7 +235,7 @@ public class BodyController : Singleton<BodyController>
 			float rotateAngle = (Vector3.Dot(Vector3.right, dir) > 0 ? Vector3.Angle(dir, Vector3.forward) : 180 - Vector3.Angle(dir, Vector3.forward));
 			for (int j = 0; j < number; j++)
 			{
-				Vector3 pos = dir.normalized * (width / 2.0f + j * width + eaveColumnDownRadius) + eaveColumnList[i].bottomPos + heightOffset * Vector3.up;
+				Vector3 pos = dir.normalized * (width / 2.0f + j * width + eaveColumnDownRadius) + eaveColumnList[i].bottomPos + heightOffset * Vector3.up - columnFundationHeight * Vector3.up;
 				GameObject clone = Instantiate(eaveColumnModelStruct.friezeModelStruct.model, pos, eaveColumnModelStruct.friezeModelStruct.model.transform.rotation) as GameObject;
 				clone.transform.rotation = Quaternion.AngleAxis(rotateAngle, Vector3.up) * Quaternion.Euler(eaveColumnModelStruct.friezeModelStruct.rotation);
 				//clone.transform.GetChild(0).localScale = new Vector3(eaveColumnModelStruct.friezeModelStruct.scale.x, eaveColumnModelStruct.friezeModelStruct.scale.y, (eaveColumnModelStruct.friezeModelStruct.scale.z / width) * (width + disDiff));
@@ -240,7 +261,7 @@ public class BodyController : Singleton<BodyController>
 			float rotateAngle = (Vector3.Dot(Vector3.right, dir) > 0 ? Vector3.Angle(dir, Vector3.forward) : 180-Vector3.Angle(dir, Vector3.forward));
 			for (int j = 0; j < number; j++)
 			{
-				Vector3 pos = dir.normalized * (width / 2.0f + j * width + eaveColumnDownRadius) + eaveColumnList[i].bottomPos + heightOffset * Vector3.up;
+				Vector3 pos = dir.normalized * (width / 2.0f + j * width + eaveColumnDownRadius) + eaveColumnList[i].bottomPos + heightOffset * Vector3.up - columnFundationHeight * Vector3.up;
 				GameObject clone = Instantiate(eaveColumnModelStruct.balustradeModelStruct.model, pos, eaveColumnModelStruct.balustradeModelStruct.model.transform.rotation) as GameObject;
 				clone.transform.rotation = Quaternion.AngleAxis(rotateAngle, Vector3.up) * Quaternion.Euler(eaveColumnModelStruct.balustradeModelStruct.rotation);
 				clone.transform.GetChild(0).localScale = new Vector3(eaveColumnModelStruct.balustradeModelStruct.scale.x, eaveColumnModelStruct.balustradeModelStruct.scale.y, (eaveColumnModelStruct.balustradeModelStruct.scale.z) * (width + disDiff) / balustradeWidth);

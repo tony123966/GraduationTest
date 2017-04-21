@@ -230,6 +230,14 @@ public class RoofController:MonoBehaviour
 
 		CreateRoof( platformController, bodyController);
 	}
+	public void UpdateFunction(PlatformController platformController, BodyController bodyController) 
+	{
+		foreach (Transform child in transform)
+		{
+			GameObject.Destroy(child);
+		}
+		CreateRoof(platformController, bodyController);
+	}
 	GameObject CreateControlPoint(GameObject parentObj, Vector3 worldPos, string name = "ControlPoint")//Create控制點
 	{
 		GameObject newControlPoint = new GameObject(name);

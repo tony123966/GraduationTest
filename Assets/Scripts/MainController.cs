@@ -39,16 +39,26 @@ public class BuildingStruct
 		body.transform.parent = building.transform;
 		roof.transform.parent = building.transform;
 	}
-	public void Init(Vector3 buildingBottomCenter, float platformFrontWidth, float platformFrontLength, float platformHeight) 
+	public void BuildAll(Vector3 buildingBottomCenter, float platformFrontWidth, float platformFrontLength, float platformHeight) 
 	{
-		building.transform.position = buildingBottomCenter;
-	
+		BuildPlatform(buildingBottomCenter, platformFrontWidth, platformFrontLength, platformHeight);
+
+		BuildBody();
+
+		BuildRoof();
+	}
+	public void BuildPlatform(Vector3 buildingBottomCenter, float platformFrontWidth, float platformFrontLength, float platformHeight) 
+	{
 		platformController.InitFunction(buildingBottomCenter, platformFrontWidth, platformFrontLength, platformHeight);
-		
+	}
+	public void BuildBody()
+	{
 		bodyController.InitFunction(platformController);
-		
+	}
+	public void BuildRoof()
+	{
 		roofController.InitFunction(platformController, bodyController);
-	 }
+	}
 }
 public class MainController : Singleton<MainController>
 {
@@ -70,7 +80,13 @@ public class MainController : Singleton<MainController>
 	{
 		InitFunction();
 	}
-
+	void  FixedUpdate()
+	{
+		if(Input.GetKeyDown(KeyCode.P))
+		{
+			AddLevel();
+		}
+	}
 	public void InitFunction()
 	{
 
@@ -83,7 +99,7 @@ public class MainController : Singleton<MainController>
 		Destroy(clone);
 		//**************************************************************************************
 		buildingLevelList = new List<BuildingStruct>();
-		for(int i=0;i<5;i++)
+
 		AddLevel();
 	}
 	public void AddLevel() 
@@ -92,21 +108,16 @@ public class MainController : Singleton<MainController>
 		float ratioXZ = Mathf.Pow(0.9f, buildingLevelList.Count);
 		float ratioY = Mathf.Pow(0.9f, buildingLevelList.Count);
 
+		/*BuildingStruct newBuildingStruct = new BuildingStruct();
+		newBuildingStruct.BuildAll(pos, platformFrontWidth * ratioXZ, platformFrontLength * ratioXZ, platformHeight * ratioY);
+		buildingLevelList.Add(newBuildingStruct);*/
 		BuildingStruct newBuildingStruct = new BuildingStruct();
-		newBuildingStruct.Init(pos, platformFrontWidth * ratioXZ, platformFrontLength * ratioXZ, platformHeight * ratioY);
-/*
+		newBuildingStruct.BuildAll(pos, platformFrontWidth * ratioXZ, platformFrontLength * ratioXZ, platformHeight * ratioY);
 		if (buildingLevelList.Count > 0)
 		{
-			GameObject clone=Instantiate(buildingLevelList[0].building, pos, buildingLevelList[0].building.transform.rotation)as GameObject;
-			newBuildingStruct.building=clone;
-			newBuildingStruct.platformController= clone.GetComponentInChildren<PlatformController>();
-			newBuildingStruct.bodyController = clone.GetComponentInChildren<BodyController>();
-			newBuildingStruct.roofController = clone.GetComponentInChildren<RoofController>();
+			buildingLevelList[buildingLevelList.Count - 1].roofController.roofType = RoofController.RoofType.Lu_Ding;
+			buildingLevelList[buildingLevelList.Count - 1].roofController.UpdateFunction(buildingLevelList[buildingLevelList.Count - 1].platformController,buildingLevelList[buildingLevelList.Count - 1].bodyController);
 		}
-		else 
-		{
-			newBuildingStruct.Init(pos, platformFrontWidth, platformFrontLength, platformHeight);
-		}*/
 		buildingLevelList.Add(newBuildingStruct);
 
 	}

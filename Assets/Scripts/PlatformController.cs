@@ -19,7 +19,7 @@ public class PlatformController:MonoBehaviour
 	public List<Vector3> bottomPointPosList=new List<Vector3>();
 
 	public bool isCurvePlatform = false;
-	public bool isStair = true;
+	public bool isStair = false;
 	//***********************************************************************
 
 	public void InitFunction(Vector3 platformCenter,float platformFrontWidth,  float platformFrontLength, float platformHeight)

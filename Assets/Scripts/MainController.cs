@@ -14,27 +14,41 @@ public struct ModelStruct//模型旋轉、縮放
 		this.scale = scale;
 	}
 }
-public struct BuildingStruct
+public class BuildingStruct
 {
-	GameObject building;
+	public GameObject building;
+	public GameObject platform;
+	public GameObject body;
+	public GameObject roof;
 	public PlatformController platformController;
 	public BodyController bodyController ;
 	public RoofController roofController;
 
-	public BuildingStruct(Vector3 buildingBottomCenter)
+	public BuildingStruct()
 	{
 		building = new GameObject("Building");
-		building.transform.position = buildingBottomCenter;
+		platform = new GameObject("Platform");
+		body = new GameObject("Body");
+		roof = new GameObject("Roof");
 
-		platformController = new PlatformController();
-		platformController.InitFunction(building, buildingBottomCenter);
+		platformController = platform.AddComponent<PlatformController>();
+		bodyController = body.AddComponent<BodyController>();
+		roofController = roof.AddComponent<RoofController>();
 
-		bodyController = new BodyController();
-		bodyController.InitFunction(building, platformController);
-
-		roofController = new RoofController();
-		roofController.InitFunction(building,  platformController,  bodyController);
+		platform.transform.parent = building.transform;
+		body.transform.parent = building.transform;
+		roof.transform.parent = building.transform;
 	}
+	public void Init(Vector3 buildingBottomCenter, float platformFrontWidth, float platformFrontLength, float platformHeight) 
+	{
+		building.transform.position = buildingBottomCenter;
+	
+		platformController.InitFunction(buildingBottomCenter, platformFrontWidth, platformFrontLength, platformHeight);
+		
+		bodyController.InitFunction(platformController);
+		
+		roofController.InitFunction(platformController, bodyController);
+	 }
 }
 public class MainController : Singleton<MainController>
 {
@@ -44,15 +58,19 @@ public class MainController : Singleton<MainController>
 	public enum FormFactorSideType { ThreeSide = 3, FourSide = 4, FiveSide = 5, SixSide = 6, EightSide = 8 };
 	public FormFactorSideType sides = FormFactorSideType.ThreeSide;
 	//**********************************************************************************
-	//**********************************************************************************
 	public float friezeWidth;//裝飾物長度
 	public float balustradeWidth;//欄杆長度
+	//**********************************************************************************
+	public float platformFrontWidth = 30;
+	public float platformFrontLength = 40;
+	public float platformHeight=5;
 	// Use this for initialization
 
 	private void Awake()
 	{
 		InitFunction();
 	}
+
 	public void InitFunction()
 	{
 
@@ -65,12 +83,32 @@ public class MainController : Singleton<MainController>
 		Destroy(clone);
 		//**************************************************************************************
 		buildingLevelList = new List<BuildingStruct>();
+		for(int i=0;i<5;i++)
+		AddLevel();
+	}
+	public void AddLevel() 
+	{
+		Vector3 pos = (buildingLevelList.Count > 0) ? buildingLevelList[buildingLevelList.Count - 1].roofController.doubleRoofTopCenter : buildingCenter;
+		float ratioXZ = Mathf.Pow(0.9f, buildingLevelList.Count);
+		float ratioY = Mathf.Pow(0.9f, buildingLevelList.Count);
 
-		BuildingStruct newBuildingStruct = new BuildingStruct(buildingCenter);
+		BuildingStruct newBuildingStruct = new BuildingStruct();
+		newBuildingStruct.Init(pos, platformFrontWidth * ratioXZ, platformFrontLength * ratioXZ, platformHeight * ratioY);
+/*
+		if (buildingLevelList.Count > 0)
+		{
+			GameObject clone=Instantiate(buildingLevelList[0].building, pos, buildingLevelList[0].building.transform.rotation)as GameObject;
+			newBuildingStruct.building=clone;
+			newBuildingStruct.platformController= clone.GetComponentInChildren<PlatformController>();
+			newBuildingStruct.bodyController = clone.GetComponentInChildren<BodyController>();
+			newBuildingStruct.roofController = clone.GetComponentInChildren<RoofController>();
+		}
+		else 
+		{
+			newBuildingStruct.Init(pos, platformFrontWidth, platformFrontLength, platformHeight);
+		}*/
 		buildingLevelList.Add(newBuildingStruct);
-		BuildingStruct newBuildingStructA = new BuildingStruct(newBuildingStruct.roofController.roofTopCenter);
-		buildingLevelList.Add(newBuildingStructA);
-	
+
 	}
 	public float DistancePoint2Line(Vector3 point, Vector3 lineStart, Vector3 dir)
 	{
@@ -241,7 +279,7 @@ public class MainController : Singleton<MainController>
 	}
 	public List<Vector3> CreateRegularRingMesh(Vector3 centerPos, int nbSides, float radius, float height, float rotateAngle, MeshFilter meshFilter)
 	{
-
+		
 		List<Vector3> controlPointPosList = new List<Vector3>();
 		controlPointPosList.Clear();
 
@@ -886,6 +924,7 @@ public class MainController : Singleton<MainController>
 		float _2pi = Mathf.PI * 2f;
 
 		List<Vector3> globalPosList = new List<Vector3>();
+		globalPosList.Clear();
 		for (int i = 0; i < localPosList.Count; i++)
 		{
 			Vector3 pos = localPosList[i] + centerPos;
@@ -904,13 +943,13 @@ public class MainController : Singleton<MainController>
 		for (int i = 0; i < curve.anchorInnerPointlist.Count; i++)
 		{
 			float radius = DistancePoint2Line(curve.anchorInnerPointlist[i], centerPos, axis);
-			Vector3 radiusCenterPos = ProjectPoint2Line(curve.anchorInnerPointlist[i], centerPos, axis) + centerPos;
+			Vector3 radiusCenterPos = ProjectPoint2Line(curve.anchorInnerPointlist[i], centerPos, axis);
 
 			pList[vert++] = radiusCenterPos;
 			for (int j = 0; j < nbSides; j++)
 			{
 				float rad = (float)j / nbSides * _2pi;
-				Vector3 pos = Quaternion.AngleAxis(rotateAngle, Vector3.up) * (new Vector3(Mathf.Cos(rad) * radius, 0f, Mathf.Sin(rad) * radius) + radiusCenterPos);
+				Vector3 pos = Quaternion.AngleAxis(rotateAngle, Vector3.up) * (new Vector3(Mathf.Cos(rad) * radius, 0f, Mathf.Sin(rad) * radius)) + radiusCenterPos;
 				pList[vert++] = pos;
 				controlPointPosList.Add(pos);
 			}

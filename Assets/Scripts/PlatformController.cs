@@ -3,16 +3,13 @@ using System.Collections;
 using System.Collections.Generic;
 public class PlatformController:MonoBehaviour
 {
-
-	public GameObject platform = null;
-
 	//Platform**************************************************************************
 	public enum PlatformType { };
 
-	public float platformFrontWidth = 30;
-	public float platformFrontLength = 40;
+	public float platformFrontWidth;
+	public float platformFrontLength;
 
-	public float platformHeight = 5;
+	public float platformHeight;
 
 	public Vector3 platformCenter;
 	//**********************************************************************************
@@ -21,18 +18,20 @@ public class PlatformController:MonoBehaviour
 	[HideInInspector]
 	public List<Vector3> bottomPointPosList=new List<Vector3>();
 
-	public bool isCurvePlatform = true;
+	public bool isCurvePlatform = false;
 	public bool isStair = true;
 	//***********************************************************************
 
-	public void InitFunction(GameObject parent, Vector3 platformCenter)
+	public void InitFunction(Vector3 platformCenter,float platformFrontWidth,  float platformFrontLength, float platformHeight)
 	{
+		this.platformFrontWidth=platformFrontWidth;
+		this.platformFrontLength = platformFrontLength;
+		this.platformHeight = platformHeight;
 
+		//***********************************************************************
 		this.platformCenter = platformCenter;
+		Debug.Log("platformCenter" + platformCenter);
 
-		platform = new GameObject("Platform");
-		platform.transform.position = platformCenter;
-		platform.transform.parent = parent.transform;
 		//***********************************************************************
 		CreatePlatform(platformCenter);
 		if (isStair) 
@@ -47,8 +46,8 @@ public class PlatformController:MonoBehaviour
 	{
 
 		GameObject platformBody = new GameObject("PlatformBody");
-		platformBody.transform.position = pos;
-		platformBody.transform.parent = platform.transform;
+		//platformBody.transform.position = pos;
+		platformBody.transform.parent = this.transform;
 		MeshFilter meshFilter = platformBody.AddComponent<MeshFilter>();
 		MeshRenderer meshRenderer = platformBody.AddComponent<MeshRenderer>();
 		meshRenderer.material.color = Color.white;
@@ -63,12 +62,14 @@ public class PlatformController:MonoBehaviour
 		if (isCurvePlatform)
 		{
 			List<Vector3> localPosList = new List<Vector3>();
+			localPosList.Clear();
 			localPosList.Add(new Vector3(15, 2, 15));
 			localPosList.Add(new Vector3(16, 0, 16));
 			localPosList.Add(new Vector3(13, -3, 13));
 			localPosList.Add(new Vector3(18, -8, 18));
-			controlPointPosList = MainController.Instance.CreateRegularCurveRingMesh(pos, localPosList, Vector3.up, (int)MainController.Instance.sides, 100, 360.0f / (int)MainController.Instance.sides / 2, meshFilter);
 			platformHeight = Mathf.Abs(localPosList[0].y - localPosList[localPosList.Count - 1].y);
+			controlPointPosList = MainController.Instance.CreateRegularCurveRingMesh(pos, localPosList, Vector3.up, (int)MainController.Instance.sides, 100, 360.0f / (int)MainController.Instance.sides / 2, meshFilter);
+			
 		}
 		else
 		{
@@ -94,8 +95,8 @@ public class PlatformController:MonoBehaviour
 	public void CreateStair(int index, float width, float height, float length)
 	{
 		GameObject stair = new GameObject("Stair");
-		stair.transform.position = platformCenter;
-		stair.transform.parent = platform.transform;
+		//stair.transform.position = platformCenter;
+		stair.transform.parent = this.transform;
 		MeshFilter meshFilter = stair.AddComponent<MeshFilter>();
 		MeshRenderer meshRenderer = stair.AddComponent<MeshRenderer>();
 		meshRenderer.material.color = Color.white;

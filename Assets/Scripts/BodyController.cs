@@ -23,7 +23,6 @@ public struct GoldColumnModelStruct
 }
 public class BodyController:MonoBehaviour
 {
-	public GameObject body = null;
 	//Body******************************************************************************
 	const float CUN = 3.33f;
 	public enum BodyType { Chuan_Dou = 0, Tai_Liang = 1 };//Chuan_Dou 穿斗式 ,Tai_Liang 抬梁式
@@ -35,7 +34,7 @@ public class BodyController:MonoBehaviour
 	public float goldColumnRatio2platformOffset;
 
 	public int goldColumnbayNumber = 3;//間數量
-	public int eaveColumnbayNumber = 5;
+	public int eaveColumnbayNumber = 1;
 	public float eaveColumnHeight;
 	public float columnFundationHeight;//柱礎高度
 
@@ -53,7 +52,7 @@ public class BodyController:MonoBehaviour
 	public List<CylinderMesh> goldColumnList = new List<CylinderMesh>();
 	//***********************************************************************
 
-	public void InitFunction(GameObject parent,PlatformController platformController)
+	public void InitFunction(PlatformController platformController)
 	{
 		//初始值******************************************************************************
 
@@ -66,11 +65,9 @@ public class BodyController:MonoBehaviour
 		goldColumnRatio2platformOffset = eaveColumnRatio2platformOffset * 2.5f;
 
 		bodyCenter = platformController.platformCenter + new Vector3(0, platformController.platformHeight / 2.0f + eaveColumnHeight / 2.0f, 0);
-
+		Debug.Log("bodyCenter" + bodyCenter);
 		//************************************************************************************
-		body = new GameObject("Body");
-		body.transform.position = bodyCenter;
-		body.transform.parent = parent.transform;
+
 
 		//**************************************************************************************
 		switch (bodyType)
@@ -93,8 +90,8 @@ public class BodyController:MonoBehaviour
 	private CylinderMesh CreateColumn(Vector3 pos, float topRadius, float downRadius,float height, string name = "Column")
 	{
 		GameObject col = new GameObject(name);
-		col.transform.position = pos;
-		col.transform.parent = body.transform;
+		//col.transform.position = pos;
+		col.transform.parent = this.transform;
 		col.AddComponent<CylinderMesh>();
 
 		Vector3 topPos = pos + new Vector3(0, height / 2.0f, 0);
@@ -177,7 +174,7 @@ public class BodyController:MonoBehaviour
 				GameObject wall = new GameObject("Wall");
 				MeshFilter meshFilter = wall.AddComponent<MeshFilter>();
 				MeshRenderer meshRenderer = wall.AddComponent<MeshRenderer>();
-				wall.transform.parent = body.transform;
+				wall.transform.parent = this.transform;
 				meshRenderer.material.color = Color.white;
 				float rotateAngle = (Vector3.Dot(Vector3.forward, dir) < 0 ? Vector3.Angle(dir, Vector3.right) : 180 - Vector3.Angle(dir, Vector3.right));
 			
@@ -213,7 +210,7 @@ public class BodyController:MonoBehaviour
 				//clone.transform.GetChild(0).localScale = new Vector3(eaveColumnModelStruct.friezeModelStruct.scale.x, eaveColumnModelStruct.friezeModelStruct.scale.y, (eaveColumnModelStruct.friezeModelStruct.scale.z / width) * (width + disDiff));
 				clone.transform.GetChild(0).localScale = new Vector3(ModelController.Instance.eaveColumnModelStruct.friezeModelStruct.scale.x, ModelController.Instance.eaveColumnModelStruct.friezeModelStruct.scale.y, (ModelController.Instance.eaveColumnModelStruct.friezeModelStruct.scale.z) * (width + disDiff) / MainController.Instance.friezeWidth);
 				//clone.transform.GetChild(0).localScale = eaveColumnModelStruct.friezeModelStruct.scale;
-				clone.transform.parent = body.transform;
+				clone.transform.parent = this.transform;
 			}
 		}
 	}
@@ -238,7 +235,7 @@ public class BodyController:MonoBehaviour
 				clone.transform.rotation = Quaternion.AngleAxis(rotateAngle, Vector3.up) * Quaternion.Euler(ModelController.Instance.eaveColumnModelStruct.balustradeModelStruct.rotation);
 				clone.transform.GetChild(0).localScale = new Vector3(ModelController.Instance.eaveColumnModelStruct.balustradeModelStruct.scale.x, ModelController.Instance.eaveColumnModelStruct.balustradeModelStruct.scale.y, (ModelController.Instance.eaveColumnModelStruct.balustradeModelStruct.scale.z) * (width + disDiff) / MainController.Instance.balustradeWidth);
 				//clone.transform.GetChild(0).localScale=eaveColumnModelStruct.balustradeModelStruct.scale;
-				clone.transform.parent = body.transform;
+				clone.transform.parent = this.transform;
 			}
 		}
 	}

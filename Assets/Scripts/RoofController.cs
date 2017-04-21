@@ -184,7 +184,6 @@ public struct RoofSurfaceModelStruct//屋面模型
 public class RoofController:MonoBehaviour
 {
 	public List<GameObject> roofList = new List<GameObject>();
-	public GameObject roof = null;
 	//RoofType************************************************************************************
 	public enum RoofType { Zan_Jian_Ding = 0, Wu_Dian_Ding = 1, Lu_Ding = 2, Juan_Peng = 3 };//Zan_Jian_Ding攢尖頂, Wu_Dian_Ding廡殿頂,Lu_Ding盝頂,Juan_Peng卷棚
 	public RoofType roofType = RoofType.Zan_Jian_Ding;
@@ -197,6 +196,7 @@ public class RoofController:MonoBehaviour
 	private float Wu_Dian_DingMainRidgeWidth;//廡殿頂主脊長度
 	private float Lu_DingMainRidgeOffset;//盝頂垂脊長度
 	public Vector3 roofTopCenter;
+	public Vector3 doubleRoofTopCenter;
 	//Parameter**********************************************************************************
 	private enum MidRoofSurfaceControlPointType { MidRoofSurfaceTopPoint, MidRoofSurfaceMidPoint, MidRoofSurfaceDownPoint };//屋面
 
@@ -213,7 +213,7 @@ public class RoofController:MonoBehaviour
 	float anchorDis = 0f;//曲線innerPoint換算anchorPoint間距
 
 
-	public void InitFunction(GameObject parent, PlatformController platformController, BodyController bodyController)
+	public void InitFunction(PlatformController platformController, BodyController bodyController)
 	{
 		//初始值******************************************************************************
 		allJijaHeight = bodyController.eaveColumnHeight * 1.2f;
@@ -221,15 +221,14 @@ public class RoofController:MonoBehaviour
 
 		beamsHeight = bodyController.eaveColumnHeight * 0.2f;
 		roofTopCenter = bodyController.bodyCenter + new Vector3(0, bodyController.eaveColumnHeight / 2.0f + allJijaHeight, 0);
+		doubleRoofTopCenter = bodyController.bodyCenter + new Vector3(0, bodyController.eaveColumnHeight / 2.0f + allJijaHeight/2.0f, 0);
 		Wu_Dian_DingMainRidgeWidth = platformController.platformFrontWidth * 0.5f;
 
-
+		Debug.Log("roofTopCenter" + roofTopCenter);
 		//************************************************************************************
-		roof = new GameObject("Roof");
-		roof.transform.position = roofTopCenter;
-		roof.transform.parent = parent.transform;
 
-		CreateRoof(parent, platformController, bodyController);
+
+		CreateRoof( platformController, bodyController);
 	}
 	GameObject CreateControlPoint(GameObject parentObj, Vector3 worldPos, string name = "ControlPoint")//Create控制點
 	{
@@ -264,7 +263,7 @@ public class RoofController:MonoBehaviour
 	{
 		Debug.Log("CreateMainRidgeTile");
 		float mainRidgeTailHeightOffset = 0.0f;
-		RidgeStruct baseList = CreateRidgeSturct("MainRidgeTileStruct", this.gameObject);
+		RidgeStruct baseList = CreateRidgeSturct("MainRidgeTileStruct", parent.gameObject);
 
 		Vector3 planeNormal = Vector3.Cross(mainRidgeStruct.controlPointDictionaryList[MainRidgeControlPointType.TopControlPoint.ToString()].transform.position - mainRidgeStruct.controlPointDictionaryList[MainRidgeControlPointType.DownControlPoint.ToString()].transform.position, Vector3.up).normalized;
 
@@ -665,7 +664,7 @@ public class RoofController:MonoBehaviour
 	}
 	RidgeStruct CreateMainRidgeStruct(List<CylinderMesh> eaveColumnList, int eaveColumnListIndex, Vector3 topControlPointPos)
 	{
-		RidgeStruct newRidgeStruct = CreateRidgeSturct("MainRidge", roof);
+		RidgeStruct newRidgeStruct = CreateRidgeSturct("MainRidge", this.gameObject);
 
 		//TopControlPoint
 		GameObject topControlPoint = CreateControlPoint(newRidgeStruct.body, topControlPointPos, MainRidgeControlPointType.TopControlPoint.ToString());
@@ -711,7 +710,7 @@ public class RoofController:MonoBehaviour
 	RidgeStruct CreateEaveStruct(RidgeStruct RightMainRidgeStruct, RidgeStruct LeftMainRidgeStruct)
 	{
 
-		RidgeStruct newRidgeStruct = CreateRidgeSturct("Eave", roof);
+		RidgeStruct newRidgeStruct = CreateRidgeSturct("Eave", this.gameObject);
 
 
 		//StartControlPoint
@@ -763,7 +762,7 @@ public class RoofController:MonoBehaviour
 
 		//for (int i = 0; i < (int)MainController.Instance.sides; i++)
 
-		RoofSurfaceStruct newRoofSurfaceStruct = CreateRoofSurfaceSturct("RoofSurface", roof);
+		RoofSurfaceStruct newRoofSurfaceStruct = CreateRoofSurfaceSturct("RoofSurface", this.gameObject);
 
 		RidgeStruct newMidRidgeStruct = CreateRidgeSturct("MidRoofSurfaceTileRidge", newRoofSurfaceStruct.body);
 
@@ -978,18 +977,18 @@ public class RoofController:MonoBehaviour
 
 		return newRoofSurfaceStruct;
 	}
-	void CopyRoofFunction(GameObject cloneObject, GameObject parent, float angle, Vector3 rotationCenter, int times, Vector3 offsetVector)
+	void CopyRoofFunction(GameObject cloneObject, float angle, Vector3 rotationCenter, int times, Vector3 offsetVector)
 	{
 		for (int i = 1; i < times; i++)
 		{
 			GameObject clone = Instantiate(cloneObject, cloneObject.transform.position, cloneObject.transform.rotation) as GameObject;
 			clone.transform.RotateAround(rotationCenter, Vector3.up, angle * i);
 			clone.transform.position += offsetVector;
-			clone.transform.parent = parent.transform;
+			clone.transform.parent = this.transform;
 		}
 
 	}
-	public void CreateRoof(GameObject parent, PlatformController platformController, BodyController bodyController)
+	public void CreateRoof( PlatformController platformController, BodyController bodyController)
 	{
 		RidgeStruct RightMainRidgeStruct;
 		RidgeStruct LeftMainRidgeStruct;
@@ -1023,7 +1022,7 @@ public class RoofController:MonoBehaviour
 					//RoofSurface
 					roofSurfaceStructList = CreateRoofSurfaceA(RightMainRidgeStruct, LeftMainRidgeStruct, eaveStruct);//屋面
 
-					//CreateMainRidgeTile(mainRidgeModelStruct, RightMainRidgeStruct, roofSurfaceStructList, eaveStruct, RightMainRidgeStruct.body);
+					CreateMainRidgeTile(ModelController.Instance.mainRidgeModelStruct, RightMainRidgeStruct, roofSurfaceStructList, eaveStruct, RightMainRidgeStruct.body);
 					//主脊-MainRidge輔助線 
 					RightMainRidgeStructA = CreateMainRidgeStruct(bodyController.eaveColumnList, ColumnIndex_Two, roofTopCenter);
 					LeftMainRidgeStructA = RightMainRidgeStruct;
@@ -1033,10 +1032,10 @@ public class RoofController:MonoBehaviour
 					//RoofSurface
 					roofSurfaceStructListA = CreateRoofSurfaceA(RightMainRidgeStructA, LeftMainRidgeStructA, eaveStructA);//屋面
 
-					//CreateMainRidgeTile(mainRidgeModelStruct, RightMainRidgeStructA, roofSurfaceStructListA, eaveStructA, RightMainRidgeStructA.body);
+					CreateMainRidgeTile(ModelController.Instance.mainRidgeModelStruct, RightMainRidgeStructA, roofSurfaceStructListA, eaveStructA, RightMainRidgeStructA.body);
 
 					//複製出其他屋面
-					CopyRoofFunction(roof, parent, 180, roofTopCenter, 2, roofTopCenter - roofTopCenter);
+					CopyRoofFunction(this.gameObject, 180, roofTopCenter, 2, roofTopCenter - roofTopCenter);
 				}
 				else
 				{
@@ -1051,10 +1050,10 @@ public class RoofController:MonoBehaviour
 					roofSurfaceStructList = CreateRoofSurfaceA(RightMainRidgeStruct, LeftMainRidgeStruct, eaveStruct);//屋面
 
 
-					//CreateMainRidgeTile(mainRidgeModelStruct, RightMainRidgeStruct, roofSurfaceStructList, eaveStruct, RightMainRidgeStruct.body);
+					CreateMainRidgeTile(ModelController.Instance.mainRidgeModelStruct, RightMainRidgeStruct, roofSurfaceStructList, eaveStruct, RightMainRidgeStruct.body);
 
 					//複製出其他屋面
-					CopyRoofFunction(roof, parent, 360.0f / (int)MainController.Instance.sides, roofTopCenter, (int)MainController.Instance.sides, roofTopCenter - roofTopCenter);
+					CopyRoofFunction(this.gameObject, 360.0f / (int)MainController.Instance.sides, roofTopCenter, (int)MainController.Instance.sides, roofTopCenter - roofTopCenter);
 
 				}
 				#endregion
@@ -1075,7 +1074,6 @@ public class RoofController:MonoBehaviour
 				eaveStruct = CreateEaveStruct(RightMainRidgeStruct, LeftMainRidgeStruct);//檐出
 				//RoofSurface
 				roofSurfaceStructList = CreateRoofSurfaceA(RightMainRidgeStruct, LeftMainRidgeStruct, eaveStruct);//屋面
-				//CreateMainRidgeTile(mainRidgeModelStruct, RightMainRidgeStruct, roofSurfaceStructList, eaveStruct, RightMainRidgeStruct.body);
 
 				CreateMainRidgeTile(ModelController.Instance.mainRidgeModelStruct, RightMainRidgeStruct, roofSurfaceStructList, eaveStruct, RightMainRidgeStruct.body);
 
@@ -1085,7 +1083,7 @@ public class RoofController:MonoBehaviour
 				float angle = Vector2.Angle(v1, v2);
 
 
-				CopyRoofFunction(RightMainRidgeStruct.body, parent, angle, rightRoofTopCenter, 2, leftRoofTopCenter - rightRoofTopCenter);
+				CopyRoofFunction(RightMainRidgeStruct.body, angle, rightRoofTopCenter, 2, leftRoofTopCenter - rightRoofTopCenter);
 
 
 				//主脊-MainRidge輔助線 
@@ -1102,7 +1100,7 @@ public class RoofController:MonoBehaviour
 
 
 				//複製出其他屋面
-				CopyRoofFunction(roof, parent, 180, roofTopCenter, 2, roofTopCenter - roofTopCenter);
+				CopyRoofFunction(this.gameObject, 180, roofTopCenter, 2, roofTopCenter - roofTopCenter);
 				}
 				#endregion
 				break;
@@ -1125,7 +1123,7 @@ public class RoofController:MonoBehaviour
 					//RoofSurface
 					roofSurfaceStructList = CreateRoofSurfaceA(RightMainRidgeStruct, LeftMainRidgeStruct, eaveStruct);//屋面
 
-					//CreateMainRidgeTile(mainRidgeModelStruct, RightMainRidgeStruct, roofSurfaceStructList, eaveStruct, RightMainRidgeStruct.body);
+					CreateMainRidgeTile(ModelController.Instance.mainRidgeModelStruct, RightMainRidgeStruct, roofSurfaceStructList, eaveStruct, RightMainRidgeStruct.body);
 					//主脊-MainRidge輔助線 
 					LeftMainRidgeStructA = RightMainRidgeStruct;
 					offsetVector = (new Vector3(bodyController.eaveColumnList[ColumnIndex_Two].topPos.x - roofTopCenter.x, 0, bodyController.eaveColumnList[ColumnIndex_Two].topPos.z - roofTopCenter.z)).normalized * Lu_DingMainRidgeOffset;
@@ -1136,9 +1134,9 @@ public class RoofController:MonoBehaviour
 					//RoofSurface
 					roofSurfaceStructListA = CreateRoofSurfaceA(RightMainRidgeStructA, LeftMainRidgeStructA, eaveStructA);//屋面
 
-					//CreateMainRidgeTile(mainRidgeModelStruct, RightMainRidgeStructA, roofSurfaceStructListA, eaveStructA, RightMainRidgeStructA.body);
+					CreateMainRidgeTile(ModelController.Instance.mainRidgeModelStruct, RightMainRidgeStructA, roofSurfaceStructListA, eaveStructA, RightMainRidgeStructA.body);
 					//複製出其他屋面
-					CopyRoofFunction(roof, parent, 180.0f, roofTopCenter, 2, roofTopCenter - roofTopCenter);
+					CopyRoofFunction(this.gameObject, 180.0f, roofTopCenter, 2, roofTopCenter - roofTopCenter);
 
 	
 				}
@@ -1157,10 +1155,10 @@ public class RoofController:MonoBehaviour
 				//RoofSurface
 				roofSurfaceStructList = CreateRoofSurfaceA(RightMainRidgeStruct, LeftMainRidgeStruct, eaveStruct);//屋面
 
-				//CreateMainRidgeTile(mainRidgeModelStruct, RightMainRidgeStruct, roofSurfaceStructList, eaveStruct, RightMainRidgeStruct.body);
+				CreateMainRidgeTile(ModelController.Instance.mainRidgeModelStruct, RightMainRidgeStruct, roofSurfaceStructList, eaveStruct, RightMainRidgeStruct.body);
 				
 				//複製出其他屋面
-				CopyRoofFunction(roof, parent, 360.0f / ((int)MainController.Instance.sides), roofTopCenter, (int)MainController.Instance.sides, roofTopCenter - roofTopCenter);
+				CopyRoofFunction(this.gameObject, 360.0f / ((int)MainController.Instance.sides), roofTopCenter, (int)MainController.Instance.sides, roofTopCenter - roofTopCenter);
 				}
 				#endregion
 				break;
